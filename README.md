@@ -69,13 +69,22 @@ The `wrangler.jsonc` file configures your Cloudflare deployment:
 
 ### Custom Server Entry (`src/server.ts`)
 
-The `src/server.ts` file is your custom Cloudflare Workers entry point where you can add additional Cloudflare features:
+The `src/server.ts` file is your custom Cloudflare Workers entry point. It routes requests between Hono REST APIs and TanStack Start:
 
 ```typescript
 import handler from "@tanstack/react-start/server-entry";
+import { apiHono } from "@/hono/api";
 
 export default {
-  fetch(request: Request) {
+  fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const url = new URL(request.url);
+
+    // Hono API handling for /api/* routes
+    if (url.pathname.startsWith("/api/")) {
+      return apiHono.fetch(request, env, ctx);
+    }
+
+    // TanStack Start handling for all other routes
     return handler.fetch(request, {
       context: {
         fromFetch: true,
@@ -90,6 +99,87 @@ export default {
   // - etc.
 };
 ```
+
+### REST API Endpoints with Hono
+
+This project includes [Hono](https://hono.dev/) for building REST API endpoints alongside TanStack Start. All `/api/*` routes are handled by Hono.
+
+#### File Structure
+
+```
+src/hono/
+├── factory.ts         # Hono instance creator with Env types
+├── api.ts             # Main API router with /api base path
+└── api/
+    ├── health.ts      # Health check endpoint
+    ├── demo.ts        # Demo endpoints
+    └── your-api.ts    # Your custom endpoints
+```
+
+#### Creating an API Endpoint
+
+```typescript
+// src/hono/api/users.ts
+import { createHono } from '@/hono/factory';
+import { z } from 'zod';
+
+const usersEndpoint = createHono();
+
+const UserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+// GET /api/users
+usersEndpoint.get("/", (c) => {
+  return c.json({ users: [] });
+});
+
+// POST /api/users
+usersEndpoint.post("/", async (c) => {
+  const body = await c.req.json();
+  const validated = UserSchema.parse(body);
+  return c.json({ created: true, user: validated }, 201);
+});
+
+export default usersEndpoint;
+```
+
+#### Registering Endpoints
+
+Add your endpoint to `src/hono/api.ts`:
+
+```typescript
+import usersEndpoint from '@/hono/api/users';
+
+apiHono.route("/users", usersEndpoint);
+```
+
+#### Testing Endpoints
+
+```bash
+# Start dev server
+pnpm dev
+
+# Test GET endpoint
+curl http://localhost:3000/api/users
+
+# Test POST endpoint
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com"}'
+```
+
+#### When to Use Hono vs Server Functions
+
+| Use Hono REST APIs | Use TanStack Server Functions |
+|-------------------|-------------------------------|
+| REST APIs for external clients | Server logic called from React |
+| Webhooks | Form submissions |
+| Public APIs | Data fetching for UI |
+| Third-party integrations | Type-safe client-server communication |
+
+Learn more in the [Hono documentation](https://hono.dev/).
 
 ## 🎨 Styling & Components
 
@@ -284,6 +374,7 @@ This template includes the latest and greatest from the React ecosystem:
 ### **Routing & Data**
 - **TanStack Router** - Type-safe, file-based routing
 - **TanStack Query** - Server state management with SSR integration
+- **Hono** - Fast, lightweight web framework for REST APIs
 
 ### **Styling & UI**
 - **Tailwind CSS v4** - Utility-first CSS with CSS variables
@@ -304,6 +395,7 @@ This template includes the latest and greatest from the React ecosystem:
 - **[TanStack Start](https://tanstack.com/start)** - Full-stack React framework
 - **[TanStack Router](https://tanstack.com/router)** - Type-safe routing
 - **[TanStack Query](https://tanstack.com/query)** - Server state management
+- **[Hono](https://hono.dev/)** - Fast web framework for APIs
 - **[Cloudflare Workers](https://workers.cloudflare.com/)** - Edge computing platform
 - **[Shadcn/UI](https://ui.shadcn.com/)** - Component library
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS

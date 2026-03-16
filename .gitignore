@@ -4,11 +4,21 @@ dist
 dist-ssr
 *.local
 count.txt
-.env
 .nitro
 .tanstack
 .output
 .vinxi
 todos.json
+
+# dotenv environment variable files
+.env
+.env.*
+!.env.example
+
+# wrangler vars
+.dev.vars
+.staging.vars
+.production.vars
+.wrangler/
 
 skills/

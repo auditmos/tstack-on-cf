@@ -1,0 +1,106 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+	"formatter": {
+		"indentStyle": "tab",
+		"lineWidth": 100,
+		"attributePosition": "auto"
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"trailingCommas": "all",
+			"semicolons": "always"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"tailwindDirectives": true
+		},
+		"formatter": {
+			"enabled": false
+		},
+		"linter": {
+			"enabled": false
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"a11y": {
+				"useHtmlLang": "warn",
+				"noLabelWithoutControl": "warn",
+				"noRedundantRoles": "warn",
+				"useSemanticElements": "warn"
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "warn"
+			},
+			"correctness": {
+				"noUnusedImports": "error",
+				"noUnusedVariables": "warn",
+				"noUnusedFunctionParameters": "warn",
+				"useImportExtensions": "off"
+			},
+			"style": {
+				"noDefaultExport": "off",
+				"useImportType": "error",
+				"useNodejsImportProtocol": "error",
+				"noNonNullAssertion": "warn"
+			},
+			"suspicious": {
+				"noExplicitAny": "error",
+				"noConsole": "warn"
+			}
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["scripts/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/*.test.ts", "**/*.test.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	],
+	"files": {
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/.cache",
+			"!**/*.tsbuildinfo",
+			"!**/worker-configuration.d.ts",
+			"!**/routeTree.gen.ts"
+		]
+	},
+	"plugins": [
+		"./.biome-plugins/no-raw-throw.grit",
+		"./.biome-plugins/no-then-chains.grit",
+		"./.biome-plugins/no-ts-ignore.grit",
+		"./.biome-plugins/no-as-any.grit",
+		"./.biome-plugins/no-todo-comments.grit"
+	]
+}

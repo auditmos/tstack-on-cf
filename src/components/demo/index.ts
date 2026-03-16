@@ -1,1 +1,1 @@
-export { MiddlewareDemo } from './middleware-demo'
+export { MiddlewareDemo } from "./middleware-demo";

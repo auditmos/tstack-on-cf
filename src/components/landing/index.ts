@@ -1,4 +1,4 @@
-export { HeroSection } from './hero-section'
-export { FeaturesSection } from './features-section'
-export { CtaSection } from './cta-section'
-export { Footer } from './footer'
+export { CtaSection } from "./cta-section";
+export { FeaturesSection } from "./features-section";
+export { Footer } from "./footer";
+export { HeroSection } from "./hero-section";

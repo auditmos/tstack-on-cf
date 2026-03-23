@@ -5,7 +5,7 @@ export default defineConfig({
 	resolve: { alias: { "@": resolve(import.meta.dirname, "src") } },
 	test: {
 		globals: true,
-		include: ["src/**/*.test.ts"],
+		include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
 		exclude: ["src/routes/**"],
 	},
 });

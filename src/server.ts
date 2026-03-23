@@ -15,10 +15,6 @@ export default {
 		}
 
 		// TanStack Start handling
-		return handler.fetch(request, {
-			context: {
-				fromFetch: true,
-			},
-		});
+		return handler.fetch(request);
 	},
 };

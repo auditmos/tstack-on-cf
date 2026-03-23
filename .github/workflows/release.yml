@@ -38,6 +38,9 @@ jobs:
       - name: Type check
         run: pnpm run types
 
+      - name: Test
+        run: pnpm run test
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

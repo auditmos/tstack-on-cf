@@ -93,7 +93,10 @@
 			"!**/.cache",
 			"!**/*.tsbuildinfo",
 			"!**/worker-configuration.d.ts",
-			"!**/routeTree.gen.ts"
+			"!**/routeTree.gen.ts",
+			"!.claude/settings.json",
+			"!.claude/settings.local.json",
+			"!.claude/skills"
 		]
 	},
 	"plugins": [

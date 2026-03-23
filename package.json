@@ -23,12 +23,12 @@
 		"deps:update": "taze -w",
 		"deps:major": "taze major",
 		"deps:major:update": "taze major -w",
-		"db:generate": "dotenvx run -f .env.dev -- drizzle-kit generate",
-		"db:migrate:dev": "dotenvx run -f .env.dev -- drizzle-kit migrate",
-		"db:migrate:staging": "dotenvx run -f .env.staging -- drizzle-kit migrate",
-		"db:migrate:production": "dotenvx run -f .env.production -- drizzle-kit migrate",
-		"db:studio": "dotenvx run -f .env.dev -- drizzle-kit studio",
-		"db:seed:dev": "dotenvx run -f .env.dev -- tsx scripts/seed.ts"
+		"db:generate": "dotenvx run -f .dev.vars -- drizzle-kit generate",
+		"db:migrate:dev": "dotenvx run -f .dev.vars -- drizzle-kit migrate",
+		"db:migrate:staging": "dotenvx run -f .staging.vars -- drizzle-kit migrate",
+		"db:migrate:production": "dotenvx run -f .production.vars -- drizzle-kit migrate",
+		"db:studio": "dotenvx run -f .dev.vars -- drizzle-kit studio",
+		"db:seed:dev": "dotenvx run -f .dev.vars -- tsx scripts/seed.ts"
 	},
 	"dependencies": {
 		"@neondatabase/serverless": "^1.0.2",
@@ -48,6 +48,7 @@
 		"drizzle-orm": "^0.45.1",
 		"hono": "^4.12.8",
 		"lucide-react": "^0.476.0",
+		"radix-ui": "^1.4.3",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
 		"tailwind-merge": "^3.5.0",

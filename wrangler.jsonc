@@ -5,6 +5,9 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "./src/server.ts",
 	"vars": {
-		"MY_VAR": "Hello from Cloudflare"
+		"CLOUDFLARE_ENV": "dev",
+		"DATABASE_HOST": "",
+		"DATABASE_USERNAME": "",
+		"DATABASE_PASSWORD": ""
 	}
 }

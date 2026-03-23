@@ -9,7 +9,6 @@ count.txt
 .output
 .vinxi
 .vscode
-todos.json
 
 # dotenv environment variable files
 .env
@@ -21,5 +20,3 @@ todos.json
 .staging.vars
 .production.vars
 .wrangler/
-
-skills/

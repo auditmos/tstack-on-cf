@@ -54,6 +54,7 @@
 			"WebFetch(domain:tanstack.com/form/latest)",
 			"WebFetch(domain:ui.shadcn.com/docs)",
 			"WebFetch(domain:hono.dev/docs/getting-started/cloudflare-workers)",
+			"WebFetch(domain:hono.dev/docs/middleware/zod-validator)",
 			"WebFetch(domain:pnpm.io/workspaces)",
 			"WebFetch(domain:tailwindcss.com/docs/installation/using-vite)",
 			"WebFetch(domain:vite.dev/guide/)",

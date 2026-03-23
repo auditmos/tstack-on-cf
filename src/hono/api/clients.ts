@@ -1,3 +1,4 @@
+import { isUniqueViolation } from "@/core/errors";
 import {
 	ClientCreateRequestSchema,
 	ClientUpdateRequestSchema,
@@ -47,10 +48,10 @@ clientsEndpoint.post("/", async (c) => {
 		const client = await createClient(parsed.data);
 		return c.json(client, 201);
 	} catch (err) {
-		const message = err instanceof Error ? err.message : "Failed to create client";
-		if (message.includes("unique")) {
+		if (isUniqueViolation(err)) {
 			return c.json({ error: "Email already exists" }, 409);
 		}
+		const message = err instanceof Error ? err.message : "Failed to create client";
 		return c.json({ error: message }, 500);
 	}
 });

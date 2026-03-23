@@ -45,6 +45,12 @@ pnpm deps:update          # apply minor updates
 pnpx shadcn@latest add <component>  # add Shadcn component
 ```
 
+## Architecture
+
+Prefer **deep modules** (Ousterhout): small interface hiding large implementation. Test at module boundaries, not internals. See `.claude/rules/deep-modules.md`.
+
+Technology-specific rules live in `.claude/rules/` with scoped `paths:` frontmatter — they activate automatically when touching relevant files.
+
 ## Verification
 
 Max 500 lines per source file — split if exceeding.
@@ -61,26 +67,6 @@ Run manually before declaring done:
 - Vitest with globals enabled — no need to import `describe`/`it`/`expect`
 - Path alias `@` resolves to `src/`
 - Route files (`src/routes/**`) are excluded from test discovery
-</important>
-
-<important if="you are adding a new API endpoint under /api">
-- Add route handler in `src/hono/api/`
-- Register it in `src/hono/api.ts`
-- All `/api/*` requests are handled by Hono via `src/server.ts`
-- TanStack Start handles everything else
-</important>
-
-<important if="you are adding or modifying routes">
-- File-based routing: create files in `src/routes/`
-- Route tree auto-generates to `src/routeTree.gen.ts` — never edit manually
-- Routes support loaders, error boundaries, and not-found components
-- Use `createFileRoute` for type-safe route definitions
-</important>
-
-<important if="you are adding Shadcn components">
-- Always use: `pnpx shadcn@latest add <component>`
-- Never hand-edit files in `src/components/ui/`
-- Configured: new-york style, Zinc base color, CSS variables
 </important>
 
 <important if="you are creating or reviewing design documents">

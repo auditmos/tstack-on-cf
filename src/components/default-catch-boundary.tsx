@@ -15,6 +15,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
 	});
 	const [showDetails, setShowDetails] = useState(false);
 
+	// biome-ignore lint/suspicious/noConsole: surface route errors for debugging
 	console.error(error);
 
 	// Format error details for display

@@ -1,58 +1,124 @@
 # TanStack Start on Cloudflare
 
-A modern, full-stack React application built with TanStack Start and deployed on Cloudflare Workers. This template showcases server functions, middleware, type-safe data fetching, and seamless integration with Cloudflare's edge computing platform.
+A production-ready **template** for building full-stack React apps on Cloudflare Workers. Ships with TanStack Start (SSR + file-based routing), a Hono API layer, Neon Postgres via Drizzle ORM, Zod validation, Shadcn/UI, and a strict Biome + Vitest toolchain.
+
+Use it as the starting point for your next project — clone it, rename it, wire up your database, and start shipping.
 
 [![TanStack Start on Cloudflare](https://img.youtube.com/vi/TWWS_lo4kOA/0.jpg)](https://www.youtube.com/watch?v=TWWS_lo4kOA)
 
-## 🚀 Quick Start
+## Why this template
+
+- **Edge-first** — single `src/server.ts` entrypoint that routes `/api/*` to Hono and everything else to TanStack Start, all running on Cloudflare Workers.
+- **Type-safe end-to-end** — strict TypeScript, Zod at every boundary, Drizzle-inferred DB types, typed Cloudflare `Env` via `wrangler types`.
+- **Deep modules** — domain-oriented layout (`src/db/{domain}/`, `src/hono/api/{name}.ts`) with narrow public APIs. See `.claude/rules/deep-modules.md`.
+- **Batteries included** — error infrastructure, Neon + Drizzle migrations, Shadcn/UI, TanStack Query SSR hydration, Vitest, Biome, knip, semantic-release, taze.
+- **Agent-friendly** — project rules in `.claude/rules/` activate automatically based on the files you touch.
+
+## Quick Start
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Start development server
-pnpm dev
+# Copy env template and fill in your Neon credentials
+cp .example.vars .dev.vars
 
-# Build for production
-pnpm build
-
-# Deploy to Cloudflare
-pnpm deploy
-```
-
-## 📦 Development Workflow
-
-This project provides a comprehensive development workflow with the following scripts:
-
-- **`pnpm dev`** - Start development server on port 3000
-- **`pnpm build`** - Build the application for production
-- **`pnpm deploy`** - Build and deploy to Cloudflare Workers
-- **`pnpm serve`** - Preview production build locally
-- **`pnpm cf-typegen`** - Generate TypeScript types for Cloudflare environment
-
-## 🌩️ Cloudflare Integration
-
-### Environment Variables & Type Generation
-
-This project includes full TypeScript support for Cloudflare Workers environment variables:
-
-```bash
-# Generate types for Cloudflare environment
+# Generate Cloudflare Env types
 pnpm cf-typegen
+
+# Run migrations against your dev database
+pnpm db:migrate:dev
+
+# Start the dev server
+pnpm dev
 ```
 
-This creates type definitions allowing you to safely import and use Cloudflare environment variables:
+The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 
-```typescript
-import { env } from "cloudflare:workers";
+## Scripts
 
-// Now env is fully typed with your Wrangler configuration
-console.log(env.MY_VAR); // TypeScript knows this exists
+| Script | Purpose |
+|--------|---------|
+| `pnpm dev` | Dev server on port 3000 (Vite + Cloudflare plugin) |
+| `pnpm build` | Production build |
+| `pnpm serve` | Preview the production build locally |
+| `pnpm deploy` | Build and deploy to Cloudflare Workers |
+| `pnpm cf-typegen` | Generate `Env` types from `wrangler.jsonc` |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest |
+| `pnpm types` | `tsc --noEmit` type-check |
+| `pnpm lint` / `pnpm lint:fix` | Biome check / auto-fix |
+| `pnpm knip` | Detect unused files, deps, and exports |
+| `pnpm db:generate` | Generate Drizzle migrations from schema |
+| `pnpm db:migrate:{dev,staging,production}` | Apply migrations to each env |
+| `pnpm db:studio` | Open Drizzle Studio against dev |
+| `pnpm db:seed:dev` | Run `scripts/seed.ts` |
+| `pnpm deps` / `pnpm deps:update` | Check / apply dependency updates via taze |
+| `pnpm release` | semantic-release |
+
+All `db:*` scripts load secrets via `@dotenvx/dotenvx` from `.dev.vars`, `.staging.vars`, or `.production.vars`.
+
+## Project Structure
+
+```
+src/
+├── server.ts                  # CF Workers entry — routes /api/* → Hono, rest → TanStack Start
+├── router.tsx                 # TanStack Router instance
+├── routes/                    # File-based routes (auto-generates routeTree.gen.ts)
+│   ├── __root.tsx
+│   ├── index.tsx
+│   └── clients.tsx
+├── components/
+│   ├── ui/                    # Shadcn primitives (do not edit manually)
+│   ├── landing/               # Landing page sections
+│   ├── navigation/            # App navigation
+│   ├── theme/                 # Theme provider / toggle
+│   └── clients/               # Feature components
+├── core/
+│   ├── errors.ts              # AppError, Result<T>, isUniqueViolation
+│   ├── functions/             # TanStack server functions
+│   └── middleware/            # Server-function middleware
+├── db/
+│   ├── setup.ts               # initDatabase / getDb singleton
+│   ├── index.ts               # Public DB module API
+│   ├── schema.ts              # Re-exports all tables
+│   ├── migrations/            # Drizzle-generated SQL
+│   ├── client/                # Domain: clients (table, queries, zod schema)
+│   └── health/                # Domain: health check query
+├── hono/
+│   ├── factory.ts             # Typed Hono factory with CF Bindings
+│   ├── api.ts                 # Router mounting /api/health, /api/clients
+│   └── api/
+│       ├── health.ts
+│       └── clients.ts         # REST CRUD for clients
+├── integrations/tanstack-query/
+├── lib/
+├── utils/
+└── styles.css                 # Tailwind v4 entry
 ```
 
-### Wrangler Configuration
+Path alias `@/*` resolves to `src/*`.
 
-The `wrangler.jsonc` file configures your Cloudflare deployment:
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | TanStack Start (Router + Query SSR) |
+| UI | React 19, Shadcn/UI (new-york, Zinc), Tailwind CSS v4, Lucide |
+| API | Hono on Cloudflare Workers |
+| Runtime | Cloudflare Workers (`nodejs_compat`) |
+| Database | Neon Postgres + Drizzle ORM (`neon-http`) |
+| Validation | Zod 4 |
+| Forms | TanStack Form |
+| Language | TypeScript (strict) |
+| Linter | Biome 2 |
+| Testing | Vitest + Testing Library + jsdom |
+| Dead-code detection | knip |
+| Release | semantic-release |
+| Package manager | pnpm 10 |
+
+## Cloudflare Integration
+
+### `wrangler.jsonc`
 
 ```jsonc
 {
@@ -60,346 +126,288 @@ The `wrangler.jsonc` file configures your Cloudflare deployment:
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "./src/server.ts",  // Custom server entry point
+  "main": "./src/server.ts",
   "vars": {
-    "MY_VAR": "Hello from Cloudflare"
+    "CLOUDFLARE_ENV": "dev",
+    "DATABASE_HOST": "",
+    "DATABASE_USERNAME": "",
+    "DATABASE_PASSWORD": ""
   }
 }
 ```
 
+- Use `wrangler.jsonc` (not `.toml`) for configuration.
+- Prefer `custom_domain: true` over routes with `zone_name` — see `.claude/rules/cloudflare-deployment.md`.
+- Run `pnpm cf-typegen` whenever you add bindings to regenerate `worker-configuration.d.ts`.
+
 ### Custom Server Entry (`src/server.ts`)
 
-The `src/server.ts` file is your custom Cloudflare Workers entry point. It routes requests between Hono REST APIs and TanStack Start:
+One fetch handler owns the entire worker: it boots the DB once per isolate, then dispatches to Hono or TanStack Start.
 
-```typescript
+```ts
 import handler from "@tanstack/react-start/server-entry";
+import { initDatabase } from "@/db";
 import { apiHono } from "@/hono/api";
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    initDatabase({
+      host: env.DATABASE_HOST,
+      username: env.DATABASE_USERNAME,
+      password: env.DATABASE_PASSWORD,
+    });
+
     const url = new URL(request.url);
 
-    // Hono API handling for /api/* routes
     if (url.pathname.startsWith("/api/")) {
       return apiHono.fetch(request, env, ctx);
     }
 
-    // TanStack Start handling for all other routes
-    return handler.fetch(request, {
-      context: {
-        fromFetch: true,
-      },
-    });
+    return handler.fetch(request, { context: { fromFetch: true } });
   },
-
-  // Add other Cloudflare Workers features:
-  // - Queue consumers: queue(batch, env) { ... }
-  // - Scheduled events: scheduled(event, env) { ... }
-  // - Durable Object handlers
-  // - etc.
 };
 ```
 
-### REST API Endpoints with Hono
+You can extend this handler with Queue consumers, scheduled events, or Durable Object bindings as your project grows.
 
-This project includes [Hono](https://hono.dev/) for building REST API endpoints alongside TanStack Start. All `/api/*` routes are handled by Hono.
+### Secrets & Environments
 
-#### File Structure
-
-```
-src/hono/
-├── factory.ts         # Hono instance creator with Env types
-├── api.ts             # Main API router with /api base path
-└── api/
-    ├── health.ts      # Health check endpoint
-    ├── demo.ts        # Demo endpoints
-    └── your-api.ts    # Your custom endpoints
-```
-
-#### Creating an API Endpoint
-
-```typescript
-// src/hono/api/users.ts
-import { createHono } from '@/hono/factory';
-import { z } from 'zod';
-
-const usersEndpoint = createHono();
-
-const UserSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-});
-
-// GET /api/users
-usersEndpoint.get("/", (c) => {
-  return c.json({ users: [] });
-});
-
-// POST /api/users
-usersEndpoint.post("/", async (c) => {
-  const body = await c.req.json();
-  const validated = UserSchema.parse(body);
-  return c.json({ created: true, user: validated }, 201);
-});
-
-export default usersEndpoint;
-```
-
-#### Registering Endpoints
-
-Add your endpoint to `src/hono/api.ts`:
-
-```typescript
-import usersEndpoint from '@/hono/api/users';
-
-apiHono.route("/users", usersEndpoint);
-```
-
-#### Testing Endpoints
+Secrets live in per-environment `.vars` files, never committed:
 
 ```bash
-# Start dev server
-pnpm dev
-
-# Test GET endpoint
-curl http://localhost:3000/api/users
-
-# Test POST endpoint
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John","email":"john@example.com"}'
+# .dev.vars
+CLOUDFLARE_ENV=dev
+DATABASE_HOST="ep-xxx.region.aws.neon.tech/neondb?sslmode=require"
+DATABASE_USERNAME="neondb_owner"
+DATABASE_PASSWORD="npg_xxx"
 ```
 
-#### When to Use Hono vs Server Functions
+For staging/production, create `.staging.vars` / `.production.vars` and set the same keys as Cloudflare secrets via `wrangler secret put`.
+
+## Database (Neon + Drizzle)
+
+The DB module follows the **deep-modules** pattern: every domain has its own folder with a narrow public API.
+
+```
+src/db/client/
+├── table.ts      # pgTable definition
+├── schema.ts     # Zod schemas for input/output
+├── queries.ts    # getClients, getClient, createClient, updateClient, deleteClient
+└── index.ts      # Public re-exports
+```
+
+- `initDatabase()` is called once per Worker isolate from `src/server.ts`.
+- Every query calls `getDb()` — never pass the DB as a parameter.
+- Inputs are validated with Zod at the API boundary; mutations use `.returning()` to avoid extra round trips.
+
+### Migration Workflow
+
+```bash
+# 1. Edit your table definition in src/db/{domain}/table.ts
+# 2. Generate a migration
+pnpm db:generate
+
+# 3. Apply it to your chosen environment
+pnpm db:migrate:dev
+pnpm db:migrate:staging
+pnpm db:migrate:production
+
+# Inspect data
+pnpm db:studio
+```
+
+`drizzle.config.ts` points at `src/db/schema.ts` (which re-exports all tables) and writes migrations to `src/db/migrations/`.
+
+## REST API with Hono
+
+All `/api/*` routes are handled by Hono. Endpoints live in `src/hono/api/` and are mounted in `src/hono/api.ts`.
+
+### Example: `GET /api/clients`
+
+```ts
+// src/hono/api/clients.ts
+import { isUniqueViolation } from "@/core/errors";
+import {
+  ClientCreateRequestSchema,
+  createClient,
+  getClients,
+  PaginationRequestSchema,
+} from "@/db/client";
+import { createHono } from "@/hono/factory";
+
+const clientsEndpoint = createHono();
+
+clientsEndpoint.get("/", async (c) => {
+  const parsed = PaginationRequestSchema.safeParse({
+    limit: c.req.query("limit"),
+    offset: c.req.query("offset"),
+  });
+  if (!parsed.success) return c.json({ error: parsed.error.message }, 400);
+  return c.json(await getClients(parsed.data));
+});
+
+clientsEndpoint.post("/", async (c) => {
+  const parsed = ClientCreateRequestSchema.safeParse(await c.req.json());
+  if (!parsed.success) return c.json({ error: parsed.error.message }, 400);
+
+  try {
+    return c.json(await createClient(parsed.data), 201);
+  } catch (err) {
+    if (isUniqueViolation(err)) return c.json({ error: "Email already exists" }, 409);
+    throw err;
+  }
+});
+
+export default clientsEndpoint;
+```
+
+### Mounting a New Endpoint
+
+```ts
+// src/hono/api.ts
+import { createHono } from "./factory";
+import clientsEndpoint from "@/hono/api/clients";
+import healthEndpoint from "@/hono/api/health";
+
+export const apiHono = createHono().basePath("/api");
+
+apiHono.route("/health", healthEndpoint);
+apiHono.route("/clients", clientsEndpoint);
+```
+
+The `createHono()` factory types `Bindings: Env` so `c.env` is fully typed against your Cloudflare configuration.
+
+### Hono vs TanStack Server Functions
 
 | Use Hono REST APIs | Use TanStack Server Functions |
-|-------------------|-------------------------------|
-| REST APIs for external clients | Server logic called from React |
+|--------------------|-------------------------------|
+| Public APIs for external clients | Server logic called from React |
 | Webhooks | Form submissions |
-| Public APIs | Data fetching for UI |
-| Third-party integrations | Type-safe client-server communication |
+| Third-party integrations | Data fetching for UI |
+| Anything with a URL contract | Type-safe client↔server calls |
 
-Learn more in the [Hono documentation](https://hono.dev/).
+## Error Handling
 
-## 🎨 Styling & Components
+Error infrastructure lives in `src/core/errors.ts`:
 
-### Tailwind CSS v4
-This project uses the latest Tailwind CSS v4 with CSS variables for theming:
+```ts
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public code: ErrorCode,
+    public status: number = 500,
+    public field?: string,
+  ) { super(message); this.name = "AppError"; }
+}
 
-```bash
-# Tailwind is pre-configured with the @tailwindcss/vite plugin
-# CSS variables are enabled for theme customization
+export type Result<T> = { ok: true; data: T } | { ok: false; error: AppError };
+
+export function isUniqueViolation(error: unknown): boolean { /* ... */ }
 ```
 
-### Shadcn/UI Components
-Add beautiful, accessible components using Shadcn/UI:
+- Use `AppError` for known, recoverable failures.
+- Use `Result<T>` when a caller needs to branch on success/failure without throwing.
+- Check `error.cause.code` (not `error.message`) when inspecting Drizzle errors — the raw Postgres code lives on `cause`. `isUniqueViolation()` is the idiomatic way to detect `23505` conflicts.
+- Unexpected errors propagate to the Hono global `onError` handler.
 
-```bash
-# Add individual components
-pnpx shadcn@latest add button
-pnpx shadcn@latest add card
-pnpx shadcn@latest add form
+See `.claude/rules/error-handling.md` for the full convention.
 
-# Components use semantic color tokens and CSS variables
-# Perfect for light/dark theme support
-```
+## Server Functions & TanStack Query
 
+Server functions run exclusively on the server with full type safety across the boundary:
 
-
-## 🗂️ File-Based Routing
-
-This project uses [TanStack Router](https://tanstack.com/router/latest) with file-based routing. Routes are automatically generated from files in the `src/routes` directory:
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## 🔄 Data Fetching & Server Functions
-
-This template demonstrates modern server-side patterns with TanStack Start's server functions, middleware, and seamless client integration.
-
-### Server Functions with Middleware
-
-Server functions run exclusively on the server and maintain type safety across network boundaries:
-
-```typescript
+```ts
 // src/core/middleware/example-middleware.ts
-export const exampleMiddleware = createMiddleware({
-  type: 'function'
-}).server(async ({ next }) => {
-  console.log('Middleware executing on server');
-  return next({
-    context: {
-      data: 'Context from middleware'
-    }
-  });
-});
+export const exampleMiddleware = createMiddleware({ type: "function" }).server(
+  async ({ next }) => next({ context: { data: "Context from middleware" } }),
+);
 
 // src/core/functions/example-functions.ts
-const ExampleInputSchema = z.object({
-  exampleKey: z.string().min(1),
-});
+const ExampleInputSchema = z.object({ exampleKey: z.string().min(1) });
 
-type ExampleInput = z.infer<typeof ExampleInputSchema>;
-
-const baseFunction = createServerFn().middleware([
-  exampleMiddleware,
-]);
-
-export const exampleFunction = baseFunction
-  .inputValidator((data: ExampleInput) => ExampleInputSchema.parse(data))
+export const exampleFunction = createServerFn()
+  .middleware([exampleMiddleware])
+  .inputValidator((data: z.infer<typeof ExampleInputSchema>) =>
+    ExampleInputSchema.parse(data),
+  )
   .handler(async (ctx) => {
-    // Access validated input: ctx.data
-    // Access middleware context: ctx.context
-    // Access Cloudflare env: env.MY_VAR
-    return 'Server response';
+    // ctx.data — validated input
+    // ctx.context — middleware context
+    return "Server response";
   });
 ```
 
-### Client Integration with TanStack Query
-
-Server functions integrate seamlessly with TanStack Query for optimal UX:
+Call them from components via TanStack Query:
 
 ```tsx
-import { useMutation } from '@tanstack/react-query';
-import { exampleFunction } from '@/core/functions/example-functions';
+import { useMutation } from "@tanstack/react-query";
+import { exampleFunction } from "@/core/functions/example-functions";
 
 function MyComponent() {
-  const mutation = useMutation({
-    mutationFn: exampleFunction,
-    onSuccess: (data) => console.log('Success:', data),
-    onError: (error) => console.error('Error:', error),
-  });
-
+  const mutation = useMutation({ mutationFn: exampleFunction });
   return (
     <button
-      onClick={() => mutation.mutate({ exampleKey: 'Hello Server!' })}
+      onClick={() => mutation.mutate({ exampleKey: "Hello Server!" })}
       disabled={mutation.isPending}
     >
-      {mutation.isPending ? 'Loading...' : 'Call Server Function'}
+      {mutation.isPending ? "Loading..." : "Call Server Function"}
     </button>
   );
 }
 ```
 
-### Key Benefits
+SSR hydration is wired up in `src/integrations/tanstack-query/` — loaders can prefetch into the query cache and it streams down with the HTML.
 
-- **🔒 Type-Safe**: Full TypeScript support with Zod validation
-- **🚀 Server-First**: Secure server-side logic with client convenience
-- **⚡ Edge Computing**: Runs on Cloudflare's global edge network
-- **🔄 Seamless Integration**: Works perfectly with TanStack Query
-- **🧩 Composable**: Middleware chains for auth, logging, validation
+## Routing & UI
 
-### Interactive Demo
+- **File-based routing** — add files to `src/routes/`, the tree auto-generates to `routeTree.gen.ts` on dev/build. Never edit the generated file.
+- **Root layout** — `src/routes/__root.tsx`.
+- **Shadcn/UI** — add components with `pnpx shadcn@latest add <component>`. Configured via `components.json` (new-york style, Zinc base, CSS variables).
+- **Tailwind v4** — configured through the `@tailwindcss/vite` plugin, no separate config file. Styles entrypoint: `src/styles.css`.
 
-This template includes a live demo showcasing the middleware and server function patterns. Check your server logs when running the demo to see the execution flow!
-
-## 🧪 Testing
-
-This project uses [Vitest](https://vitest.dev/) for fast unit and integration testing:
+## Testing
 
 ```bash
-# Run tests
-pnpm test
-
-# Test configuration is in vite.config.ts
-# Uses jsdom environment for DOM testing
-# Includes @testing-library/react for component testing
+pnpm test           # run once
+pnpm test:watch     # watch mode
+pnpm test:coverage  # v8 coverage
 ```
 
-## 📋 Tech Stack
+- Tests live next to source as `*.test.ts` / `*.test.tsx`.
+- Vitest globals are enabled — no need to import `describe` / `it` / `expect`.
+- Route files (`src/routes/**`) are excluded from test discovery.
+- Test at module boundaries (exported queries, HTTP requests, user interactions), not internals. See `.claude/rules/deep-modules.md`.
 
-This template includes the latest and greatest from the React ecosystem:
+## Agent Rules & Design Docs
 
-### **Core Framework**
-- **TanStack Start** - Full-stack React framework with SSR
-- **React 19** - Latest React with concurrent features
-- **TypeScript** - Strict type checking enabled
+This template is set up for agent-assisted development:
 
-### **Routing & Data**
-- **TanStack Router** - Type-safe, file-based routing
-- **TanStack Query** - Server state management with SSR integration
-- **Hono** - Fast, lightweight web framework for REST APIs
+- `.claude/CLAUDE.md` — project-wide instructions.
+- `.claude/rules/` — topic rules (`general.md`, `deep-modules.md`, `error-handling.md`, `atomic-imports.md`, `cloudflare-deployment.md`, plus stack-specific rules under `db/` and `frontend/`) that activate automatically based on the files being edited.
+- `AGENTS.md` — agent workflow guide.
+- `/docs` — single source of truth for business requirements / design docs.
 
-### **Styling & UI**
-- **Tailwind CSS v4** - Utility-first CSS with CSS variables
-- **Shadcn/UI** - Beautiful, accessible component library
-- **Lucide React** - Consistent icon set
+## Using this Template
 
-### **Development Tools**
-- **Vite** - Lightning-fast build tool and dev server
-- **Vitest** - Unit testing with jsdom
-- **TypeScript** - Full type safety across client and server
+1. Click **Use this template** on GitHub (or `gh repo create --template`).
+2. Rename the worker in `wrangler.jsonc` (`name`) and `package.json` (`name`).
+3. Provision a Neon database and fill in `.dev.vars`.
+4. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
+5. Delete `src/db/client/` and `src/hono/api/clients.ts` when you no longer need the example CRUD, and start modelling your own domain.
 
-### **Deployment**
-- **Cloudflare Workers** - Edge computing platform
-- **Wrangler** - Cloudflare deployment and development CLI
+## Learn More
 
-## 🚀 Learn More
+- **[TanStack Start](https://tanstack.com/start)** — full-stack React framework
+- **[TanStack Router](https://tanstack.com/router)** — type-safe routing
+- **[TanStack Query](https://tanstack.com/query)** — server state management
+- **[Hono](https://hono.dev/)** — fast web framework for APIs
+- **[Drizzle ORM](https://orm.drizzle.team/)** — type-safe SQL
+- **[Neon](https://neon.tech/)** — serverless Postgres
+- **[Cloudflare Workers](https://workers.cloudflare.com/)** — edge computing platform
+- **[Shadcn/UI](https://ui.shadcn.com/)** — component library
+- **[Tailwind CSS](https://tailwindcss.com/)** — utility-first CSS
+- **[Biome](https://biomejs.dev/)** — fast formatter and linter
 
-- **[TanStack Start](https://tanstack.com/start)** - Full-stack React framework
-- **[TanStack Router](https://tanstack.com/router)** - Type-safe routing
-- **[TanStack Query](https://tanstack.com/query)** - Server state management
-- **[Hono](https://hono.dev/)** - Fast web framework for APIs
-- **[Cloudflare Workers](https://workers.cloudflare.com/)** - Edge computing platform
-- **[Shadcn/UI](https://ui.shadcn.com/)** - Component library
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS
+## License
 
-## 📄 License
-
-This template is open source and available under the [MIT License](LICENSE).
+Open source under the [MIT License](LICENSE).

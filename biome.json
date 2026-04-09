@@ -94,6 +94,7 @@
 			"!**/*.tsbuildinfo",
 			"!**/worker-configuration.d.ts",
 			"!**/routeTree.gen.ts",
+			"!src/db/migrations",
 			"!.claude/settings.json",
 			"!.claude/settings.local.json",
 			"!.claude/skills"

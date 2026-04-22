@@ -48,10 +48,11 @@ The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 | `pnpm types` | `tsc --noEmit` type-check |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / auto-fix |
 | `pnpm knip` | Detect unused files, deps, and exports |
-| `pnpm db:generate` | Generate Drizzle migrations from schema |
+| `pnpm db:generate:{dev,staging,production}` | Generate Drizzle migrations for each env |
 | `pnpm db:migrate:{dev,staging,production}` | Apply migrations to each env |
+| `pnpm db:pull:{dev,staging,production}` | Pull schema from existing DB |
 | `pnpm db:studio` | Open Drizzle Studio against dev |
-| `pnpm db:seed:dev` | Run `scripts/seed.ts` |
+| `pnpm db:seed:{dev,staging,production}` | Run `scripts/seed.ts` against each env |
 | `pnpm deps` / `pnpm deps:update` | Check / apply dependency updates via taze |
 | `pnpm release` | semantic-release |
 
@@ -81,7 +82,7 @@ src/
 │   ├── setup.ts               # initDatabase / getDb singleton
 │   ├── index.ts               # Public DB module API
 │   ├── schema.ts              # Re-exports all tables
-│   ├── migrations/            # Drizzle-generated SQL
+│   ├── migrations/{dev,staging,production}/ # Per-env Drizzle migrations
 │   ├── client/                # Domain: clients (table, queries, zod schema)
 │   └── health/                # Domain: health check query
 ├── hono/
@@ -202,21 +203,31 @@ src/db/client/
 
 ### Migration Workflow
 
+Each environment has its own Drizzle config (`drizzle-{env}.config.ts`) and migration directory (`src/db/migrations/{env}/`).
+
 ```bash
 # 1. Edit your table definition in src/db/{domain}/table.ts
-# 2. Generate a migration
-pnpm db:generate
+# 2. Generate a migration for the target environment
+pnpm db:generate:dev
+pnpm db:generate:staging
+pnpm db:generate:production
 
-# 3. Apply it to your chosen environment
+# 3. Apply it
 pnpm db:migrate:dev
 pnpm db:migrate:staging
 pnpm db:migrate:production
+
+# Pull schema from an existing database
+pnpm db:pull:dev
+
+# Seed sample data
+pnpm db:seed:dev
 
 # Inspect data
 pnpm db:studio
 ```
 
-`drizzle.config.ts` points at `src/db/schema.ts` (which re-exports all tables) and writes migrations to `src/db/migrations/`.
+Per-env configs (`drizzle-dev.config.ts`, `drizzle-staging.config.ts`, `drizzle-production.config.ts`) all point at `src/db/schema.ts` but write migrations to separate directories, allowing independent migration tracking per environment.
 
 ## REST API with Hono
 

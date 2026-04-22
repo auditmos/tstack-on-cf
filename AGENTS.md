@@ -43,6 +43,19 @@ pnpm knip                 # unused files/deps/exports
 pnpm deps                 # check for updates
 pnpm deps:update          # apply minor updates
 pnpx shadcn@latest add <component>  # add Shadcn component
+
+# Database (per-environment)
+pnpm db:generate:dev      # generate migrations (dev)
+pnpm db:generate:staging  # generate migrations (staging)
+pnpm db:generate:production # generate migrations (production)
+pnpm db:migrate:dev       # apply migrations (dev)
+pnpm db:migrate:staging   # apply migrations (staging)
+pnpm db:migrate:production # apply migrations (production)
+pnpm db:pull:dev          # pull schema from DB (dev)
+pnpm db:seed:dev          # seed sample data (dev)
+pnpm db:seed:staging      # seed sample data (staging)
+pnpm db:seed:production   # seed sample data (production)
+pnpm db:studio            # Drizzle Studio (dev)
 ```
 
 ## Architecture

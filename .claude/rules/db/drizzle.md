@@ -54,7 +54,9 @@ const user = await db.query.users.findFirst({
 ## Migrations
 
 - Never manually edit generated migration files
-- Run `pnpm db:generate` then `pnpm db:migrate:dev` (or `:staging` / `:production`)
+- Per-environment configs: `drizzle-dev.config.ts`, `drizzle-staging.config.ts`, `drizzle-production.config.ts`
+- Per-environment migration dirs: `src/db/migrations/{dev,staging,production}/`
+- Run `pnpm db:generate:dev` then `pnpm db:migrate:dev` (or `:staging` / `:production`)
 - Test migrations on dev/staging before production
 
 ## Domain Module Pattern

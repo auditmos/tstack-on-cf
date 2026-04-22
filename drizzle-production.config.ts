@@ -10,7 +10,7 @@ if (!host || !username || !password) {
 
 export default defineConfig({
 	schema: "./src/db/schema.ts",
-	out: "./src/db/migrations",
+	out: "./src/db/migrations/production",
 	dialect: "postgresql",
 	dbCredentials: {
 		url: `postgresql://${username}:${password}@${host}`,

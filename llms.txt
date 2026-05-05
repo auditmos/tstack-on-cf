@@ -1,0 +1,43 @@
+# tstack-on-cf
+
+> TanStack Start frontend + Hono API backend on Cloudflare Workers (single-app, no monorepo).
+
+## Project
+
+- [Project overview](AGENTS.md): Stack, project structure, scripts, conventions
+
+## Rules
+
+### General
+- [General TypeScript & Cloudflare](.claude/rules/general.md): Type safety, error handling, naming, array access, bug fix workflow
+- [Cloudflare Deployment](.claude/rules/cloudflare-deployment.md): Hostname separation, custom domains, SSL/TLS, Vite plugin environments
+- [Error Handling](.claude/rules/error-handling.md): Drizzle error unwrapping, Result pattern, AppError flow
+- [Atomic Imports](.claude/rules/atomic-imports.md): Combine import + usage in one Edit (PostToolUse cleanup)
+- [Deep Modules](.claude/rules/deep-modules.md): Narrow interface, hidden implementation; module boundaries
+
+### api
+- [Hono](.claude/rules/api/hono.md): Handler/service/query pattern, middleware chain, Result type
+- [Cloudflare Workers](.claude/rules/api/cloudflare-workers.md): Worker patterns, bindings, WorkerEntrypoint
+
+### db
+- [Drizzle ORM](.claude/rules/db/drizzle.md): Schema definitions, migrations, query patterns
+- [Zod Validation](.claude/rules/db/zod.md): Schema naming conventions, request/response patterns
+- [Neon Postgres](.claude/rules/db/neon.md): Serverless DB connection patterns
+
+### frontend
+- [TanStack](.claude/rules/frontend/tanstack.md): Router, Query, server functions, SSR patterns
+- [React](.claude/rules/frontend/react.md): Component patterns, hooks
+- [UI](.claude/rules/frontend/ui.md): Component library patterns
+- [shadcn/tweakcn](.claude/rules/frontend/shadcn-tweakcn.md): UI primitives
+- [Forms](.claude/rules/frontend/form-patterns.md): Form validation and submission
+
+## Agents
+
+- [Design Doc Writer](.claude/agents/dd-w.md): Create design documents and technical specifications
+- [Design Doc Implementer](.claude/agents/dd-i.md): Implement features from existing design documents
+- [MVP Advisor](.claude/agents/mvp-e.md): Ensure speed-over-perfection principles
+
+## Commands
+
+- [Implement](.claude/commands/implement.md): Implement a design doc
+- [Verify Design Docs](.claude/commands/verify-dd.md): Review design docs for implementation readiness

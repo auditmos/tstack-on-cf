@@ -1,10 +1,22 @@
 # TanStack Start on Cloudflare
 
+*AI agent index: [llms.txt](./llms.txt)*
+
 A production-ready **template** for building full-stack React apps on Cloudflare Workers. Ships with TanStack Start (SSR + file-based routing), a Hono API layer, Neon Postgres via Drizzle ORM, Zod validation, Shadcn/UI, and a strict Biome + Vitest toolchain.
 
 Use it as the starting point for your next project — clone it, rename it, wire up your database, and start shipping.
 
 [![TanStack Start on Cloudflare](https://img.youtube.com/vi/TWWS_lo4kOA/0.jpg)](https://www.youtube.com/watch?v=TWWS_lo4kOA)
+
+## Using this Template
+
+1. Click **Use this template** on GitHub (or `gh repo create --template`).
+2. Rename the worker in `wrangler.jsonc` (`name`) and `package.json` (`name`).
+3. Provision a Neon database and fill in `.dev.vars`.
+4. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
+5. Delete `src/db/client/` and `src/hono/api/clients.ts` when you no longer need the example CRUD, and start modelling your own domain.
+
+See [Quick Start](#quick-start) below for the dev-loop commands.
 
 ## Why this template
 
@@ -397,14 +409,6 @@ This template is set up for agent-assisted development:
 - `.claude/rules/` — topic rules (`general.md`, `deep-modules.md`, `error-handling.md`, `atomic-imports.md`, `cloudflare-deployment.md`, plus stack-specific rules under `db/` and `frontend/`) that activate automatically based on the files being edited.
 - `AGENTS.md` — agent workflow guide.
 - `/docs` — single source of truth for business requirements / design docs.
-
-## Using this Template
-
-1. Click **Use this template** on GitHub (or `gh repo create --template`).
-2. Rename the worker in `wrangler.jsonc` (`name`) and `package.json` (`name`).
-3. Provision a Neon database and fill in `.dev.vars`.
-4. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
-5. Delete `src/db/client/` and `src/hono/api/clients.ts` when you no longer need the example CRUD, and start modelling your own domain.
 
 ## Learn More
 

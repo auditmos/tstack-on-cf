@@ -4,6 +4,7 @@
 	"type": "module",
 	"packageManager": "pnpm@10.33.3",
 	"scripts": {
+		"prepare": "simple-git-hooks",
 		"dev": "vite dev --port 3000",
 		"build": "vite build",
 		"deploy": "pnpm run build && wrangler deploy",
@@ -87,7 +88,12 @@
 		"typescript": "^5.9.3",
 		"vite": "7.1.2",
 		"vitest": "^4.1.5",
+		"simple-git-hooks": "^2.13.1",
 		"web-vitals": "^4.2.4",
 		"wrangler": "^4.87.0"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "pnpm run lint:ci",
+		"pre-push": "pnpm run types"
 	}
 }

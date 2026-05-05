@@ -8,7 +8,7 @@
 		"build": "vite build",
 		"deploy": "pnpm run build && wrangler deploy",
 		"serve": "vite preview",
-		"cf-typegen": "wrangler types --env-interface Env",
+		"cf-typegen": "wrangler types --env-interface BaseEnv",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",

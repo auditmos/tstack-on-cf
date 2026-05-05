@@ -11,10 +11,11 @@ Use it as the starting point for your next project — clone it, rename it, wire
 ## Using this Template
 
 1. Click **Use this template** on GitHub (or `gh repo create --template`).
-2. Rename the worker in `wrangler.jsonc` (`name`) and `package.json` (`name`).
-3. Provision a Neon database and fill in `.dev.vars`.
-4. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
-5. Delete `src/db/client/` and `src/hono/api/clients.ts` when you no longer need the example CRUD, and start modelling your own domain.
+2. `pnpm install`.
+3. `pnpm run init-project` — prompts for a kebab-case project name, renames `wrangler.jsonc` + `package.json`, and fans out `.env.example` → `.env` and `.example.vars` → `.dev.vars` / `.staging.vars` / `.production.vars`. Idempotent — re-runnable, never overwrites filled-in files. The script's "Next steps" output lists every field that still needs a value.
+4. Provision a Neon database and fill `DATABASE_HOST/USERNAME/PASSWORD` in `.dev.vars` (and the staging / production variants when you deploy them).
+5. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
+6. *(Optional, when you're done with the demo)* delete `src/db/client/` and `src/hono/api/clients.ts`. Then start modelling your own domain.
 
 See [Quick Start](#quick-start) below for the dev-loop commands.
 

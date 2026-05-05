@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/auditmos/tstack-on-cf/compare/v1.1.0...v1.2.0) (2026-05-05)
+
+
+### Features
+
+* add init-project script for onboarding fresh clones ([82be9c8](https://github.com/auditmos/tstack-on-cf/commit/82be9c81ff03732b0655b0087139eb0b18d67b1c))
+
 # [1.1.0](https://github.com/auditmos/tstack-on-cf/compare/v1.0.0...v1.1.0) (2026-04-09)
 
 

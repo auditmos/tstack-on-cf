@@ -97,7 +97,8 @@
 			"!src/db/migrations",
 			"!.claude/settings.json",
 			"!.claude/settings.local.json",
-			"!.claude/skills"
+			"!.claude/skills",
+			"!.codex"
 		]
 	},
 	"plugins": [

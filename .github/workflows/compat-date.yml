@@ -1,0 +1,140 @@
+name: Compat date check
+
+on:
+  schedule:
+    - cron: "0 6 * * 2" # Tuesday 06:00 UTC (07:00/08:00 PL) — staggered after deps-update
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: compat-date
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  check:
+    name: Bump compatibility_date if > 90 days behind
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Inspect & bump compatibility_date
+        id: check
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+
+          const path = "wrangler.jsonc";
+          const raw = readFileSync(path, "utf8");
+          const stripped = raw
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/\/\/.*/g, "");
+          const config = JSON.parse(stripped);
+          const current = config.compatibility_date;
+          if (!current) {
+            console.error(`${path} has no compatibility_date`);
+            process.exit(1);
+          }
+
+          const ageDays = (Date.now() - new Date(current).getTime()) / 86_400_000;
+          const today = new Date().toISOString().slice(0, 10);
+          const out = process.env.GITHUB_OUTPUT;
+
+          console.log(`Current: ${current} (age ${ageDays.toFixed(1)} days)`);
+          console.log(`Today:   ${today}`);
+
+          if (ageDays <= 90) {
+            console.log("Within 90 days — no PR needed.");
+            appendFileSync(out, "bump=false\n");
+            process.exit(0);
+          }
+
+          const updated = raw.replace(
+            /("compatibility_date"\s*:\s*)"[^"]+"/,
+            `$1"${today}"`,
+          );
+          if (updated === raw) {
+            console.error("Failed to rewrite compatibility_date — regex did not match");
+            process.exit(1);
+          }
+          writeFileSync(path, updated);
+          appendFileSync(out, "bump=true\n");
+          appendFileSync(out, `from=${current}\n`);
+          appendFileSync(out, `to=${today}\n`);
+          appendFileSync(out, `age_days=${ageDays.toFixed(0)}\n`);
+          console.log(`Bumped ${current} → ${today}`);
+          NODE
+
+      - name: Install (only if bumping)
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate Worker types
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm run cf-typegen
+
+      - name: Lint
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm run lint:ci
+
+      - name: Type check
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm run types
+
+      - name: Test
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm run test
+
+      - name: Knip
+        if: steps.check.outputs.bump == 'true'
+        run: pnpm run knip
+
+      - name: Open PR
+        if: steps.check.outputs.bump == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/compat-date-bump
+          delete-branch: true
+          commit-message: "chore(cf): bump compatibility_date to ${{ steps.check.outputs.to }}"
+          title: "chore(cf): bump compatibility_date to ${{ steps.check.outputs.to }}"
+          body: |
+            Automated bump of `wrangler.jsonc` `compatibility_date`.
+
+            - **From:** `${{ steps.check.outputs.from }}`
+            - **To:** `${{ steps.check.outputs.to }}`
+            - **Age at trigger:** ${{ steps.check.outputs.age_days }} days (threshold: 90)
+
+            Also regenerated `worker-configuration.d.ts` via `pnpm cf-typegen`.
+
+            Validated by this job before opening the PR:
+            - `pnpm lint:ci`
+            - `pnpm types`
+            - `pnpm test`
+            - `pnpm knip`
+
+            Note: `secrets.GITHUB_TOKEN` does not trigger CI on PRs it
+            creates. To run CI on this PR, click "Re-run all jobs" or push
+            an empty commit.
+
+            See [Cloudflare compatibility dates](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+            for the runtime APIs unlocked by this bump.
+
+            Closes related audit finding from `/workers-best-practices`.
+          labels: automated, workers-best-practices

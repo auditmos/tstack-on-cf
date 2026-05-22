@@ -20,3 +20,6 @@ count.txt
 .staging.vars
 .production.vars
 .wrangler/
+
+# Codex CLI local state
+.codex/

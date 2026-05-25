@@ -12,6 +12,11 @@ describe("wrangler.jsonc", () => {
 	const config = loadJsonc(resolve(__dirname, "..", "wrangler.jsonc")) as {
 		vars?: Record<string, string>;
 		compatibility_date?: string;
+		observability?: {
+			enabled?: boolean;
+			logs?: { head_sampling_rate?: number };
+			traces?: { enabled?: boolean; head_sampling_rate?: number };
+		};
 	};
 
 	it("does not declare database credentials in vars (use secrets)", () => {
@@ -25,5 +30,11 @@ describe("wrangler.jsonc", () => {
 		const date = new Date(config.compatibility_date as string);
 		const ageDays = (Date.now() - date.getTime()) / (24 * 60 * 60 * 1000);
 		expect(ageDays).toBeLessThan(90);
+	});
+
+	it("enables observability with sampling configured", () => {
+		expect(config.observability?.enabled).toBe(true);
+		expect(config.observability?.logs?.head_sampling_rate).toBeGreaterThan(0);
+		expect(config.observability?.traces?.enabled).toBe(true);
 	});
 });

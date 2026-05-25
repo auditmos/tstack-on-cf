@@ -6,5 +6,10 @@
 	"main": "./src/server.ts",
 	"vars": {
 		"CLOUDFLARE_ENV": "dev"
+	},
+	"observability": {
+		"enabled": true,
+		"logs": { "head_sampling_rate": 1 },
+		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
 	}
 }

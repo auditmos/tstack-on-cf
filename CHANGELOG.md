@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/auditmos/tstack-on-cf/compare/v1.2.0...v1.2.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* **security:** move DATABASE_* out of wrangler vars ([#5](https://github.com/auditmos/tstack-on-cf/issues/5)) ([da254b1](https://github.com/auditmos/tstack-on-cf/commit/da254b1302612643b2f770350f6094693e85f4b2))
+
 # [1.2.0](https://github.com/auditmos/tstack-on-cf/compare/v1.1.0...v1.2.0) (2026-05-05)
 
 

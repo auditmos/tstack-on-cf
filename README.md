@@ -142,13 +142,12 @@ Path alias `@/*` resolves to `src/*`.
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/server.ts",
   "vars": {
-    "CLOUDFLARE_ENV": "dev",
-    "DATABASE_HOST": "",
-    "DATABASE_USERNAME": "",
-    "DATABASE_PASSWORD": ""
+    "CLOUDFLARE_ENV": "dev"
   }
 }
 ```
+
+`DATABASE_HOST`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` are **secrets**, not plain `vars` — they reach the Worker via `.dev.vars` locally and `wrangler secret put` in deployed environments (see [Secrets & Environments](#secrets--environments)). `wrangler types` reads `.dev.vars` and continues to emit them on `Env` for type-safe access in `src/server.ts`.
 
 - Use `wrangler.jsonc` (not `.toml`) for configuration.
 - Prefer `custom_domain: true` over routes with `zone_name` — see `.claude/rules/cloudflare-deployment.md`.
@@ -196,7 +195,19 @@ DATABASE_USERNAME="neondb_owner"
 DATABASE_PASSWORD="npg_xxx"
 ```
 
-For staging/production, create `.staging.vars` / `.production.vars` and set the same keys as Cloudflare secrets via `wrangler secret put`.
+For staging/production, create `.staging.vars` / `.production.vars` for local DB tooling (Drizzle migrations, etc.), and push the same keys to Cloudflare as secrets:
+
+```bash
+wrangler secret put DATABASE_HOST       --env staging
+wrangler secret put DATABASE_USERNAME   --env staging
+wrangler secret put DATABASE_PASSWORD   --env staging
+
+wrangler secret put DATABASE_HOST       --env production
+wrangler secret put DATABASE_USERNAME   --env production
+wrangler secret put DATABASE_PASSWORD   --env production
+```
+
+Never commit `DATABASE_*` values to `wrangler.jsonc` — they belong in secrets, not `vars`.
 
 ## Database (Neon + Drizzle)
 

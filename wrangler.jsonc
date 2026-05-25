@@ -5,9 +5,6 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "./src/server.ts",
 	"vars": {
-		"CLOUDFLARE_ENV": "dev",
-		"DATABASE_HOST": "",
-		"DATABASE_USERNAME": "",
-		"DATABASE_PASSWORD": ""
+		"CLOUDFLARE_ENV": "dev"
 	}
 }

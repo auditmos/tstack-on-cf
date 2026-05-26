@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/auditmos/tstack-on-cf/compare/v1.5.1...v1.5.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* **api:** remove dead CLOUDFLARE_ENV fallback in health endpoint ([#11](https://github.com/auditmos/tstack-on-cf/issues/11)) ([2962457](https://github.com/auditmos/tstack-on-cf/commit/2962457d40313ada0d67148d9cf71295cc806ac8))
+
 ## [1.5.1](https://github.com/auditmos/tstack-on-cf/compare/v1.5.0...v1.5.1) (2026-05-26)
 
 

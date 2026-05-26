@@ -4,6 +4,10 @@ import handler from "@tanstack/react-start/server-entry";
 import { initDatabase } from "@/db";
 import { apiHono } from "@/hono/api";
 
+export function isApiRequest(pathname: string): boolean {
+	return pathname === "/api" || pathname.startsWith("/api/");
+}
+
 export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		initDatabase({
@@ -14,7 +18,7 @@ export default {
 
 		const url = new URL(request.url);
 
-		if (url.pathname.startsWith("/api/")) {
+		if (isApiRequest(url.pathname)) {
 			return apiHono.fetch(request, env, ctx);
 		}
 

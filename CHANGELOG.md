@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/auditmos/tstack-on-cf/compare/v1.3.0...v1.4.0) (2026-05-26)
+
+
+### Features
+
+* **api:** wire global Hono onError handler ([#9](https://github.com/auditmos/tstack-on-cf/issues/9)) ([2a8bd39](https://github.com/auditmos/tstack-on-cf/commit/2a8bd394fb8c18cd063b3b396c35552b053ef5ba))
+
 # [1.3.0](https://github.com/auditmos/tstack-on-cf/compare/v1.2.1...v1.3.0) (2026-05-26)
 
 

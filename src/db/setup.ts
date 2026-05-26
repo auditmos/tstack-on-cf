@@ -1,6 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
+// Cached per Worker isolate (not per request). initDatabase() is idempotent —
+// see workers-best-practices rule "Do not store request-scoped state in global scope".
 let db: ReturnType<typeof drizzle>;
 
 interface DbConfig {

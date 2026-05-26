@@ -19,6 +19,17 @@ Use it as the starting point for your next project — clone it, rename it, wire
 
 See [Quick Start](#quick-start) below for the dev-loop commands.
 
+## Remove these on project start
+
+The following files exist purely to demonstrate the server-function + middleware wiring. They are not imported by any production route — delete them as soon as you start modelling your own domain so they don't linger in the import graph or your search results:
+
+- `src/core/middleware/example-middleware.ts`
+- `src/core/functions/example-functions.ts`
+- `src/components/demo/middleware-demo.tsx`
+- `src/components/demo/index.ts`
+
+After deleting, also drop the matching `src/readme-demo-cleanup.test.ts` (it exists to keep this list honest) and run `pnpm knip` to catch any stragglers.
+
 ## Why this template
 
 - **Edge-first** — single `src/server.ts` entrypoint that routes `/api/*` to Hono and everything else to TanStack Start, all running on Cloudflare Workers.

@@ -11,5 +11,15 @@
 		"enabled": true,
 		"logs": { "head_sampling_rate": 1 },
 		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
+	},
+	"env": {
+		"staging": {
+			"name": "tanstack-start-app-staging",
+			"vars": { "CLOUDFLARE_ENV": "staging" }
+		},
+		"production": {
+			"name": "tanstack-start-app-production",
+			"vars": { "CLOUDFLARE_ENV": "production" }
+		}
 	}
 }

@@ -55,7 +55,10 @@ The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 | `pnpm dev` | Dev server on port 3000 (Vite + Cloudflare plugin) |
 | `pnpm build` | Production build |
 | `pnpm serve` | Preview the production build locally |
-| `pnpm deploy` | Build and deploy to Cloudflare Workers |
+| `pnpm build:{staging,production}` | Build for a specific env (bakes env config via `vite build --mode <env>`) |
+| `pnpm deploy` | Build and deploy to the default (`dev`) Cloudflare Workers config |
+| `pnpm deploy:staging` | Build with `--mode staging` and deploy the pre-configured worker |
+| `pnpm deploy:production` | Build with `--mode production` and deploy the pre-configured worker |
 | `pnpm cf-typegen` | Generate `Env` types from `wrangler.jsonc` |
 | `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest |
 | `pnpm types` | `tsc --noEmit` type-check |

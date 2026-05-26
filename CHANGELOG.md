@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/auditmos/tstack-on-cf/compare/v1.5.0...v1.5.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **db:** log structured error when checkDatabase() fails ([#10](https://github.com/auditmos/tstack-on-cf/issues/10)) ([c070cec](https://github.com/auditmos/tstack-on-cf/commit/c070cec2074c5a6036a1b6bc3ee0bf6ad76d29ba))
+
 # [1.5.0](https://github.com/auditmos/tstack-on-cf/compare/v1.4.1...v1.5.0) (2026-05-26)
 
 

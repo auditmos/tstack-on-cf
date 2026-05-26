@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/auditmos/tstack-on-cf/compare/v1.2.1...v1.3.0) (2026-05-26)
+
+
+### Features
+
+* **cf:** enable Workers observability with sampling ([#7](https://github.com/auditmos/tstack-on-cf/issues/7)) ([805213e](https://github.com/auditmos/tstack-on-cf/commit/805213e8b013c24213d21d447d060766be95b2fa))
+
 ## [1.2.1](https://github.com/auditmos/tstack-on-cf/compare/v1.2.0...v1.2.1) (2026-05-25)
 
 

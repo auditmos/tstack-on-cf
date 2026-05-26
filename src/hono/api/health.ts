@@ -15,7 +15,7 @@ healthEndpoint.get("/ready", async (c) => {
 	const status = database === "connected" ? "ok" : "degraded";
 	const response = {
 		status: status as "ok" | "degraded",
-		env: c.env.CLOUDFLARE_ENV ?? "unknown",
+		env: c.env.CLOUDFLARE_ENV,
 		service: "tstack-on-cf",
 		time: new Date().toISOString(),
 		database,

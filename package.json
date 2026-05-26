@@ -99,6 +99,6 @@
 	},
 	"simple-git-hooks": {
 		"pre-commit": "pnpm run lint:ci",
-		"pre-push": "pnpm run types && pnpm run knip"
+		"pre-push": "pnpm run cf-typegen && pnpm run types && pnpm run knip"
 	}
 }

@@ -15,12 +15,13 @@ type ExampleInput = z.infer<typeof ExampleInputSchema>;
 export const examplefunction = baseFunction
 	.inputValidator((data: ExampleInput) => ExampleInputSchema.parse(data))
 	.handler(async (ctx) => {
-		// biome-ignore lint/suspicious/noConsole: demo logs for server function execution flow
-		console.log("Executing example function");
-		// biome-ignore lint/suspicious/noConsole: demo logs for server function execution flow
-		console.log(`The data passed: ${JSON.stringify(ctx.data)}`);
-		// biome-ignore lint/suspicious/noConsole: demo logs for server function execution flow
-		console.log(`The context from middleware: ${JSON.stringify(ctx.context)}`);
-		// console.log(`The Cloudflare Worker Environment: ${JSON.stringify(env)}`);
+		// biome-ignore lint/suspicious/noConsole: structured demo log surfaces in Workers tail
+		console.log(JSON.stringify({ message: "example-fn: executing" }));
+		// biome-ignore lint/suspicious/noConsole: structured demo log surfaces in Workers tail
+		console.log(JSON.stringify({ message: "example-fn: input", data: ctx.data }));
+		// biome-ignore lint/suspicious/noConsole: structured demo log surfaces in Workers tail
+		console.log(
+			JSON.stringify({ message: "example-fn: middleware-context", context: ctx.context }),
+		);
 		return "Function executed successfully";
 	});

@@ -1,3 +1,10 @@
+## [1.5.5](https://github.com/auditmos/tstack-on-cf/compare/v1.5.4...v1.5.5) (2026-07-22)
+
+
+### Bug Fixes
+
+* **ci:** stop pre-push hook from breaking automated pushes ([11e1113](https://github.com/auditmos/tstack-on-cf/commit/11e1113f773983342dcaa460703fcc2bfae46243))
+
 ## [1.5.4](https://github.com/auditmos/tstack-on-cf/compare/v1.5.3...v1.5.4) (2026-05-26)
 
 

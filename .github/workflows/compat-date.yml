@@ -14,7 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # See deps-update.yml — the simple-git-hooks pre-push hook regenerates
+  # worker-configuration.d.ts without .dev.vars present and breaks the push.
+  SKIP_SIMPLE_GIT_HOOKS: "1"
 
 jobs:
   check:
@@ -23,13 +27,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -85,10 +89,11 @@ jobs:
         if: steps.check.outputs.bump == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Regenerate Worker types
-        if: steps.check.outputs.bump == 'true'
-        run: pnpm run cf-typegen
-
+      # NOTE: deliberately no `pnpm cf-typegen` here. It reads .dev.vars, which
+      # is gitignored and absent in CI, so regenerating would drop DATABASE_*
+      # from Cloudflare.Env and fail the type check below. Bumping
+      # compatibility_date alone does not change the generated bindings — see
+      # the manual follow-up note in the PR body.
       - name: Lint
         if: steps.check.outputs.bump == 'true'
         run: pnpm run lint:ci
@@ -107,7 +112,7 @@ jobs:
 
       - name: Open PR
         if: steps.check.outputs.bump == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/compat-date-bump
@@ -121,7 +126,12 @@ jobs:
             - **To:** `${{ steps.check.outputs.to }}`
             - **Age at trigger:** ${{ steps.check.outputs.age_days }} days (threshold: 90)
 
-            Also regenerated `worker-configuration.d.ts` via `pnpm cf-typegen`.
+            **Manual follow-up:** this workflow does not regenerate
+            `worker-configuration.d.ts` — `wrangler types` reads `.dev.vars`,
+            which is gitignored and absent in CI, so regenerating here would
+            strip the `DATABASE_*` declarations from `Cloudflare.Env`. Run
+            `pnpm cf-typegen` locally and commit on top of this PR if the
+            runtime-types header banner matters to you.
 
             Validated by this job before opening the PR:
             - `pnpm lint:ci`

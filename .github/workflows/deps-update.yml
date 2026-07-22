@@ -16,6 +16,14 @@ concurrency:
 env:
   # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # `pnpm install` runs `prepare` → simple-git-hooks, which installs the
+  # pre-push hook (`cf-typegen && types && knip`) into the runner. When
+  # create-pull-request pushes, that hook regenerates worker-configuration.d.ts
+  # from wrangler.jsonc + .dev.vars — and .dev.vars is gitignored, so the
+  # DATABASE_* secrets vanish from Cloudflare.Env and `tsc` fails, killing the
+  # push. The hook is a local dev net; CI already runs the same checks as
+  # explicit steps below, against the committed d.ts.
+  SKIP_SIMPLE_GIT_HOOKS: "1"
 
 jobs:
   update:
@@ -24,13 +32,13 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -57,7 +65,7 @@ jobs:
         run: pnpm run knip
 
       - name: Open PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/deps-update

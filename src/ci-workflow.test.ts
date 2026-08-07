@@ -36,9 +36,11 @@ describe("CI workflow", () => {
 	});
 });
 
-// peter-evans/create-pull-request pushes with GITHUB_TOKEN, and GitHub does not
-// start `pull_request` runs for events that token created. workflow_dispatch is
-// an explicit exception, so each bot workflow asks CI to run on its own branch.
+// peter-evans/create-pull-request pushes with GITHUB_TOKEN. GitHub creates the
+// `pull_request` run for such a PR but parks it in `action_required` pending a
+// human approval. workflow_dispatch is an explicit exception to that gate, so
+// each bot workflow asks CI to run on its own branch and the checks execute
+// without anyone clicking approve.
 describe("bot pull requests get the same checks", () => {
 	const BOT_WORKFLOWS = [
 		["deps-update.yml", "chore/deps-update"],

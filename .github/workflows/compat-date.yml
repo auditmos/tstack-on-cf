@@ -147,9 +147,10 @@ jobs:
             Closes related audit finding from `/workers-best-practices`.
           labels: automated, workers-best-practices
 
-      # `pull_request` runs are suppressed for PRs GITHUB_TOKEN created;
-      # workflow_dispatch is the documented exception, so request the run
-      # explicitly against the branch the PR was opened from.
+      # The `pull_request` run for a PR GITHUB_TOKEN created is parked in
+      # `action_required` until a human approves it. workflow_dispatch is an
+      # explicit exception to that gate, so request the run against the branch
+      # the PR was opened from and get the checks without the approval click.
       - name: Run CI on the pull request branch
         if: steps.pr.outputs.pull-request-number != ''
         env:

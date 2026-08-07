@@ -4,9 +4,11 @@ on:
   pull_request:
   push:
     branches: [main]
-  # Reachable via `gh workflow run ci.yml --ref <branch>`. GITHUB_TOKEN-created
-  # pull requests do not trigger `pull_request` runs, but workflow_dispatch is
-  # an explicit exception — this is how the bot PRs get the same checks.
+  # Reachable via `gh workflow run ci.yml --ref <branch>`. A GITHUB_TOKEN-created
+  # pull request does get a `pull_request` run, but GitHub parks it in
+  # `action_required` until someone clicks approve. workflow_dispatch is an
+  # explicit exception to that gate, so the bot workflows use it to get the same
+  # checks executed without waiting on a human.
   workflow_dispatch:
 
 permissions:

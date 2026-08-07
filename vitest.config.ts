@@ -41,7 +41,7 @@ export default defineConfig({
 				test: {
 					name: "node",
 					globals: true,
-					include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+					include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.ts"],
 					exclude: ["src/routes/**", WORKER_TESTS],
 				},
 			},

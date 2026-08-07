@@ -43,62 +43,21 @@ jobs:
       # `taze.config.ts` sets mode `minor`, which is why the weekly bump job
       # never proposes a major and why nothing tracked them before this job.
       # `-l` includes exact-pinned ranges — without it vite and biome, the two
-      # pinned exactly, are missing from the report entirely.
+      # pinned exactly, are missing from the report entirely. The generous
+      # timeout and retries are not cosmetic: a resolution that gives up is
+      # dropped from the output silently, and the report then under-reports.
+      # `-a` is what makes that detectable — it emits up-to-date packages too,
+      # so a dependency missing from the output means the scan failed on it
+      # rather than that it had nothing to report.
       - name: Collect available majors
-        run: pnpm exec taze major -r -l --json > majors.json
+        run: >
+          pnpm exec taze major -r -l -a --json
+          --request-timeout 20000 --retry 6
+          > majors.json
 
       - name: Build report
         id: report
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
-
-          const report = JSON.parse(readFileSync("majors.json", "utf8"));
-          const majors = report.packages
-            .flatMap((pkg) => pkg.resolved ?? [])
-            .filter((dep) => dep.diff === "major")
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-          const day = (iso) =>
-            iso ? new Date(iso).toISOString().slice(0, 10) : "—";
-
-          const lines = [
-            "<!-- managed by .github/workflows/major-upgrades.yml -->",
-            "",
-            majors.length === 0
-              ? "No major upgrades are available. Nothing to do."
-              : `${majors.length} major upgrade${majors.length === 1 ? " is" : "s are"} available.`,
-            "",
-          ];
-
-          if (majors.length > 0) {
-            lines.push(
-              "| Package | Where | Current | Latest | Current released | Latest released |",
-              "| --- | --- | --- | --- | --- | --- |",
-              ...majors.map((dep) =>
-                `| \`${dep.name}\` | ${dep.source} | \`${dep.currentVersion}\` | \`${dep.targetVersion}\` | ${day(dep.currentVersionTime)} | ${day(dep.targetVersionTime)} |`,
-              ),
-              "",
-            );
-          }
-
-          lines.push(
-            "---",
-            "",
-            "This issue is rewritten in place on the 1st of each month. It reports only —",
-            "it opens no pull requests and changes no versions. Take the majors worth",
-            "taking one at a time, with the `deps` scripts in `package.json`, and let CI judge each.",
-            "",
-            `Produced by \`taze major -r -l\` in run [${process.env.GITHUB_RUN_ID}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}).`,
-          );
-
-          writeFileSync("report.md", `${lines.join("\n")}\n`);
-          appendFileSync(process.env.GITHUB_OUTPUT, `count=${majors.length}\n`);
-          console.log(`${majors.length} major upgrade(s) available`);
-          for (const dep of majors) {
-            console.log(`  ${dep.name} ${dep.currentVersion} -> ${dep.targetVersion}`);
-          }
-          NODE
+        run: pnpm exec tsx scripts/major-upgrades-report.ts
 
       # One tracking issue, rewritten. The label is the identity — a title match
       # would break the moment the title is edited, and every run would then

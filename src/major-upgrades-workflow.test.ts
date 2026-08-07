@@ -48,6 +48,20 @@ describe("major-upgrades workflow", () => {
 	it("includes exact-pinned dependencies in the scan", () => {
 		expect(body).toMatch(/taze[^\n]*(\s-l\b|\s--include-locked\b)/);
 	});
+
+	// Without this, taze emits only packages that have an update, so "absent
+	// from the scan" cannot be told apart from "already current" — and the
+	// report loses its ability to admit it missed something.
+	it("scans every declared dependency, not only the outdated ones", () => {
+		expect(body).toMatch(/taze[^\n]*(\s-a\b|\s--all\b)/);
+	});
+
+	// The report decides whether a silently-dropped dependency is visible, which
+	// is too load-bearing to leave as an untested heredoc.
+	it("builds the report with the checked-in script", () => {
+		expect(commands).toMatch(/scripts\/major-upgrades-report\.ts/);
+		expect(existsSync(resolve(__dirname, "..", "scripts", "major-upgrades-report.ts"))).toBe(true);
+	});
 });
 
 describe("major-upgrades tracking issue", () => {

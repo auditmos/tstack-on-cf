@@ -1,0 +1,133 @@
+name: Major upgrades
+
+on:
+  schedule:
+    - cron: "0 6 1 * *" # 1st of the month 06:00 UTC — monthly, so majors stay distinct from the weekly minor-bump noise
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: major-upgrades
+  cancel-in-progress: false
+
+env:
+  # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TRACKING_LABEL: major-upgrades
+  TRACKING_TITLE: "chore(deps): available major upgrades"
+
+jobs:
+  report:
+    name: Report available major upgrades
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # `taze.config.ts` sets mode `minor`, which is why the weekly bump job
+      # never proposes a major and why nothing tracked them before this job.
+      # `-l` includes exact-pinned ranges — without it vite and biome, the two
+      # pinned exactly, are missing from the report entirely.
+      - name: Collect available majors
+        run: pnpm exec taze major -r -l --json > majors.json
+
+      - name: Build report
+        id: report
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+
+          const report = JSON.parse(readFileSync("majors.json", "utf8"));
+          const majors = report.packages
+            .flatMap((pkg) => pkg.resolved ?? [])
+            .filter((dep) => dep.diff === "major")
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          const day = (iso) =>
+            iso ? new Date(iso).toISOString().slice(0, 10) : "—";
+
+          const lines = [
+            "<!-- managed by .github/workflows/major-upgrades.yml -->",
+            "",
+            majors.length === 0
+              ? "No major upgrades are available. Nothing to do."
+              : `${majors.length} major upgrade${majors.length === 1 ? " is" : "s are"} available.`,
+            "",
+          ];
+
+          if (majors.length > 0) {
+            lines.push(
+              "| Package | Where | Current | Latest | Current released | Latest released |",
+              "| --- | --- | --- | --- | --- | --- |",
+              ...majors.map((dep) =>
+                `| \`${dep.name}\` | ${dep.source} | \`${dep.currentVersion}\` | \`${dep.targetVersion}\` | ${day(dep.currentVersionTime)} | ${day(dep.targetVersionTime)} |`,
+              ),
+              "",
+            );
+          }
+
+          lines.push(
+            "---",
+            "",
+            "This issue is rewritten in place on the 1st of each month. It reports only —",
+            "it opens no pull requests and changes no versions. Take the majors worth",
+            "taking one at a time, with the `deps` scripts in `package.json`, and let CI judge each.",
+            "",
+            `Produced by \`taze major -r -l\` in run [${process.env.GITHUB_RUN_ID}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}).`,
+          );
+
+          writeFileSync("report.md", `${lines.join("\n")}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `count=${majors.length}\n`);
+          console.log(`${majors.length} major upgrade(s) available`);
+          for (const dep of majors) {
+            console.log(`  ${dep.name} ${dep.currentVersion} -> ${dep.targetVersion}`);
+          }
+          NODE
+
+      # One tracking issue, rewritten. The label is the identity — a title match
+      # would break the moment the title is edited, and every run would then
+      # open another issue.
+      - name: Update or open the tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COUNT: ${{ steps.report.outputs.count }}
+        run: |
+          gh label create "$TRACKING_LABEL" \
+            --description "Monthly report of available major dependency upgrades" \
+            --color "0e8a16" 2>/dev/null || true
+
+          existing=$(gh issue list \
+            --label "$TRACKING_LABEL" \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --title "$TRACKING_TITLE" --body-file report.md
+            echo "Updated existing tracking issue #$existing in place."
+          elif [ "$COUNT" != "0" ]; then
+            created=$(gh issue create \
+              --title "$TRACKING_TITLE" \
+              --label "$TRACKING_LABEL" \
+              --body-file report.md)
+            echo "Opened tracking issue $created."
+          else
+            echo "No majors available and no open tracking issue — nothing to report."
+          fi

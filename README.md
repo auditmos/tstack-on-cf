@@ -19,6 +19,8 @@ Use it as the starting point for your next project — clone it, rename it, wire
 
 See [Quick Start](#quick-start) below for the dev-loop commands.
 
+> **Before you deploy anything:** the demo API is public unauthenticated CRUD. Read [Security posture](#security-posture).
+
 ## Remove these on project start
 
 The following files exist purely to demonstrate the server-function + middleware wiring. They are not imported by any production route — delete them as soon as you start modelling your own domain so they don't linger in the import graph or your search results:
@@ -351,6 +353,39 @@ The `createHono()` factory types `Bindings: Env` so `c.env` is fully typed again
 | Webhooks | Form submissions |
 | Third-party integrations | Data fetching for UI |
 | Anything with a URL contract | Type-safe client↔server calls |
+
+## Security posture
+
+**The demo API is public, unauthenticated create-read-update-delete. It must not ship as-is.**
+
+Every `/api/*` route answers any request that reaches the Worker — including `POST`, `PUT` and `DELETE` on `/api/clients`. Anyone who knows the URL can write to and delete from your database. That is deliberate: these routes are scaffolding you delete, and a token check shipped in a template invites being mistaken for something production-grade. So no authentication is implemented here. What ships instead is the seam it attaches to.
+
+**Authentication attaches in `src/hono/factory.ts`.** `createHono()` applies every middleware it is handed to `*`, ahead of any handler the endpoint registers:
+
+```ts
+import { type ApiMiddleware, createHono } from "@/hono/factory";
+
+const requireApiKey: ApiMiddleware = async (c, next) => {
+  if (c.req.header("authorization") !== `Bearer ${c.env.API_TOKEN}`) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  await next();
+};
+
+const clientsEndpoint = createHono(requireApiKey);
+```
+
+Attach it per endpoint, or on the `createHono()` call in `src/hono/api.ts` to cover every mounted route at once. Existing call sites are untouched — `createHono()` with no arguments is exactly what it was, an unauthenticated endpoint.
+
+**Before you deploy:**
+
+- Delete the demo surface or put authentication in front of it — `src/db/client/`, `src/hono/api/clients.ts`, and the `/clients` mount in `src/hono/api.ts`.
+- Decide what `/api/health/ready` may disclose. It currently returns the environment name and database reachability to anyone who asks.
+- Add cross-origin configuration if browsers on other origins will call this API. None is configured, so none is applied.
+- Add rate limiting. There is none, and a public write endpoint without it is a bill waiting to happen.
+- Set the Worker's secrets — see [Secrets & Environments](#secrets--environments).
+
+Token validation, session handling, cross-origin configuration and rate limiting are deliberately absent rather than half-implemented: a seam you fill is honest, a partial implementation you inherit is not.
 
 ## Error Handling
 

@@ -76,6 +76,22 @@ jobs:
             process.exit(1);
           }
           writeFileSync(path, updated);
+
+          // The README quotes this config, and an invariant test fails when the
+          // two disagree — so the bump has to land in both files or this job
+          // opens a pull request that fails its own CI.
+          const readmePath = "README.md";
+          const readme = readFileSync(readmePath, "utf8");
+          const readmeUpdated = readme.replace(
+            /("compatibility_date"\s*:\s*)"[^"]+"/,
+            `$1"${today}"`,
+          );
+          if (readmeUpdated === readme) {
+            console.error("Failed to rewrite compatibility_date in README.md — regex did not match");
+            process.exit(1);
+          }
+          writeFileSync(readmePath, readmeUpdated);
+
           appendFileSync(out, "bump=true\n");
           appendFileSync(out, `from=${current}\n`);
           appendFileSync(out, `to=${today}\n`);

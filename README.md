@@ -109,7 +109,7 @@ src/
 │   ├── setup.ts               # initDatabase / getDb singleton
 │   ├── index.ts               # Public DB module API
 │   ├── schema.ts              # Re-exports all tables
-│   ├── migrations/{dev,staging,production}/ # Per-env Drizzle migrations
+│   ├── migrations/dev/        # Drizzle migrations (staging/production on demand)
 │   ├── client/                # Domain: clients (table, queries, zod schema)
 │   └── health/                # Domain: health check query
 ├── hono/
@@ -152,7 +152,7 @@ Path alias `@/*` resolves to `src/*`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tanstack-start-app",
-  "compatibility_date": "2025-09-02",
+  "compatibility_date": "2026-05-25",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/server.ts",
   "vars": {
@@ -247,6 +247,18 @@ src/db/client/
 ### Migration Workflow
 
 Each environment has its own Drizzle config (`drizzle-{env}.config.ts`) and migration directory (`src/db/migrations/{env}/`).
+
+#### Migration directories
+
+Only the development directory ships with the template. The others are created
+the first time you generate migrations for that environment — there is nothing
+to commit until you provision it.
+
+| Environment | Directory | Status |
+| ----------- | --------- | ------ |
+| `dev` | `src/db/migrations/dev` | In the repository |
+| `staging` | `src/db/migrations/staging` | Created by `pnpm db:generate:staging` |
+| `production` | `src/db/migrations/production` | Created by `pnpm db:generate:production` |
 
 ```bash
 # 1. Edit your table definition in src/db/{domain}/table.ts

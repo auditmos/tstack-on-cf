@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/auditmos/tstack-on-cf/compare/v1.6.0...v1.7.0) (2026-08-07)
+
+
+### Features
+
+* **api:** document where authentication attaches, and say the demo has none ([9bb2248](https://github.com/auditmos/tstack-on-cf/commit/9bb2248b3133f62eb52bab0109f29da022f4f387)), closes [#26](https://github.com/auditmos/tstack-on-cf/issues/26)
+
 # [1.6.0](https://github.com/auditmos/tstack-on-cf/compare/v1.5.5...v1.6.0) (2026-08-07)
 
 

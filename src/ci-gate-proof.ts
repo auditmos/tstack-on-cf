@@ -1,4 +1,4 @@
-export function proof(){
-      const   x    =  1
-  return x
+export function proof(): number {
+	const x: string = "not a number";
+	return x;
 }

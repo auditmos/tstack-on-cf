@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/auditmos/tstack-on-cf/compare/v1.5.5...v1.6.0) (2026-08-07)
+
+
+### Features
+
+* **cf:** declare required secrets in wrangler config ([b7e3ff1](https://github.com/auditmos/tstack-on-cf/commit/b7e3ff10f1147f1f7852d895ab4334a070b18074)), closes [#23](https://github.com/auditmos/tstack-on-cf/issues/23)
+
 ## [1.5.5](https://github.com/auditmos/tstack-on-cf/compare/v1.5.4...v1.5.5) (2026-07-22)
 
 

@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write # dispatch CI onto the branch this job pushes
 
 concurrency:
   group: compat-date
@@ -109,6 +110,7 @@ jobs:
         run: pnpm run knip
 
       - name: Open PR
+        id: pr
         if: steps.check.outputs.bump == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
@@ -136,12 +138,20 @@ jobs:
             - `pnpm test`
             - `pnpm knip`
 
-            Note: `secrets.GITHUB_TOKEN` does not trigger CI on PRs it
-            creates. To run CI on this PR, click "Re-run all jobs" or push
-            an empty commit.
+            The CI workflow is dispatched onto this branch by the step after
+            PR creation, so the same checks a human PR runs appear here too.
 
             See [Cloudflare compatibility dates](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
             for the runtime APIs unlocked by this bump.
 
             Closes related audit finding from `/workers-best-practices`.
           labels: automated, workers-best-practices
+
+      # `pull_request` runs are suppressed for PRs GITHUB_TOKEN created;
+      # workflow_dispatch is the documented exception, so request the run
+      # explicitly against the branch the PR was opened from.
+      - name: Run CI on the pull request branch
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref chore/compat-date-bump

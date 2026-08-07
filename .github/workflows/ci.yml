@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Reachable via `gh workflow run ci.yml --ref <branch>`. GITHUB_TOKEN-created
+  # pull requests do not trigger `pull_request` runs, but workflow_dispatch is
+  # an explicit exception — this is how the bot PRs get the same checks.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  verify:
+    name: Lint, types, tests, knip, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          # Pinned, not `lts/*` — a moving alias silently changes the runtime
+          # under a green build. Bump deliberately.
+          node-version: 24.18.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint:ci
+
+      - name: Type check
+        run: pnpm run types
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Knip
+        run: pnpm run knip
+
+      - name: Build
+        run: pnpm run build
+

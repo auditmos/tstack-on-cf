@@ -8,6 +8,7 @@
 		"drizzle-*.config.ts"
 	],
 	"ignoreDependencies": [
+		"cloudflare",
 		"@tanstack/react-form",
 		"@testing-library/dom",
 		"@testing-library/react",

@@ -479,6 +479,26 @@ pnpm test:coverage  # v8 coverage
 - Route files (`src/routes/**`) are excluded from test discovery.
 - Test at module boundaries (exported queries, HTTP requests, user interactions), not internals. See `.claude/rules/deep-modules.md`.
 
+The suite is split across Vitest projects, both driven by that one `pnpm test`:
+
+| Project | Runs | Files |
+|---------|------|-------|
+| `node` | Node | `src/**/*.test.ts(x)` |
+| `workers` | `workerd`, via `@cloudflare/vitest-pool-workers` | `src/**/*.worker.test.ts` |
+
+Name a file `*.worker.test.ts` and it runs inside the real Workers runtime with the bindings from `wrangler.jsonc`, reachable through `cloudflare:test`:
+
+```ts
+import { env, SELF } from "cloudflare:test";
+
+const res = await SELF.fetch("https://example.com/api/health/live"); // real dispatch
+expect(env.CLOUDFLARE_ENV).toBe("dev");                             // real binding
+```
+
+Secrets are never read from your `.dev.vars` for these — `vitest.config.ts` binds inert stand-ins, so the suite behaves the same on your machine and in CI. TanStack Start's server entry is stubbed in that project (it needs a full Start build to resolve); dispatch is what these tests are for, and the stub makes "this request reached the app, not the API" an exact assertion.
+
+Add a project to `vitest.config.ts` to run tests under another environment — exclude `src/routes/**` and keep `pnpm test` the only entry point, both of which `src/vitest-projects.test.ts` enforces.
+
 ## Agent Rules & Design Docs
 
 This template is set up for agent-assisted development:

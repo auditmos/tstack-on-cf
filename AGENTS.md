@@ -80,6 +80,7 @@ Run manually before declaring done:
 - Vitest with globals enabled — no need to import `describe`/`it`/`expect`
 - Path alias `@` resolves to `src/`
 - Route files (`src/routes/**`) are excluded from test discovery
+- Name a file `*.worker.test.ts` to run it inside the real Workers runtime, with `wrangler.jsonc` bindings via `cloudflare:test`. Everything else runs in Node. Both from `pnpm test`
 </important>
 
 <important if="you are creating or reviewing design documents">

@@ -74,6 +74,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
 		"@cloudflare/vite-plugin": "^1.50.0",
+		"@cloudflare/vitest-pool-workers": "^0.20.3",
 		"@dotenvx/dotenvx": "^1.75.1",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",

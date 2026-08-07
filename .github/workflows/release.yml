@@ -16,11 +16,6 @@ concurrency:
 env:
   # Future-proof: opt into Node 24 for JS actions before GH forces it (2026-06-02 default, 2026-09-16 hard cutoff)
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # @semantic-release/git pushes the release commit (CHANGELOG.md, package.json).
-  # Without this, the simple-git-hooks pre-push hook runs cf-typegen in CI,
-  # where .dev.vars is absent, stripping DATABASE_* from Cloudflare.Env and
-  # failing `tsc` — which would abort the release push. See deps-update.yml.
-  SKIP_SIMPLE_GIT_HOOKS: "1"
 
 jobs:
   release:

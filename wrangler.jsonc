@@ -7,6 +7,13 @@
 	"vars": {
 		"CLOUDFLARE_ENV": "dev"
 	},
+	// Source of truth for the Worker's secret names. Drives `wrangler types`
+	// (no .dev.vars inference), constrains which keys local dev loads, and makes
+	// `wrangler deploy` fail with a named list when one was never set.
+	// NOT inherited by env blocks — must be repeated in each one.
+	"secrets": {
+		"required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
+	},
 	"observability": {
 		"enabled": true,
 		"logs": { "head_sampling_rate": 1 },
@@ -15,11 +22,17 @@
 	"env": {
 		"staging": {
 			"name": "tanstack-start-app-staging",
-			"vars": { "CLOUDFLARE_ENV": "staging" }
+			"vars": { "CLOUDFLARE_ENV": "staging" },
+			"secrets": {
+				"required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
+			}
 		},
 		"production": {
 			"name": "tanstack-start-app-production",
-			"vars": { "CLOUDFLARE_ENV": "production" }
+			"vars": { "CLOUDFLARE_ENV": "production" },
+			"secrets": {
+				"required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
+			}
 		}
 	}
 }

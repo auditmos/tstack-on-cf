@@ -157,11 +157,16 @@ Path alias `@/*` resolves to `src/*`.
   "main": "./src/server.ts",
   "vars": {
     "CLOUDFLARE_ENV": "dev"
+  },
+  "secrets": {
+    "required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
   }
 }
 ```
 
-`DATABASE_HOST`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` are **secrets**, not plain `vars` — they reach the Worker via `.dev.vars` locally and `wrangler secret put` in deployed environments (see [Secrets & Environments](#secrets--environments)). `wrangler types` reads `.dev.vars` and continues to emit them on `Env` for type-safe access in `src/server.ts`.
+`DATABASE_HOST`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` are **secrets**, not plain `vars` — they reach the Worker via `.dev.vars` locally and `wrangler secret put` in deployed environments (see [Secrets & Environments](#secrets--environments)). The `secrets.required` block is the single source of truth for their names: `wrangler types` emits them on `Env` from that declaration rather than inferring them from `.dev.vars`, so type generation produces identical output on a fresh checkout with no secrets file. It also constrains which keys local dev loads, and makes `wrangler deploy` fail with a named list when one was never set on the Worker.
+
+`secrets` is **not** inherited by `env` blocks — repeat the same block inside `env.staging` and `env.production`.
 
 - Use `wrangler.jsonc` (not `.toml`) for configuration.
 - Prefer `custom_domain: true` over routes with `zone_name` — see `.claude/rules/cloudflare-deployment.md`.

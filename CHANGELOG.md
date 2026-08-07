@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/auditmos/tstack-on-cf/compare/v1.7.0...v1.7.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **ci:** stop the major-upgrade report from silently under-reporting ([75f8b90](https://github.com/auditmos/tstack-on-cf/commit/75f8b906bb31f691ce723367a4b3e1a091f87fa7)), closes [#28](https://github.com/auditmos/tstack-on-cf/issues/28)
+
 # [1.7.0](https://github.com/auditmos/tstack-on-cf/compare/v1.6.0...v1.7.0) (2026-08-07)
 
 

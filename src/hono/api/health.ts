@@ -1,20 +1,20 @@
-import { checkDatabase } from "@/db/health";
+import { checkDatabase, type LivenessResponse, type ReadinessResponse } from "@/db/health";
 import { createHono } from "@/hono/factory";
 
 const healthEndpoint = createHono();
 
-healthEndpoint.get("/live", (c) =>
-	c.json({
-		status: "ok" as const,
+healthEndpoint.get("/live", (c) => {
+	const response: LivenessResponse = {
+		status: "ok",
 		time: new Date().toISOString(),
-	}),
-);
+	};
+	return c.json(response);
+});
 
 healthEndpoint.get("/ready", async (c) => {
 	const database = await checkDatabase();
-	const status = database === "connected" ? "ok" : "degraded";
-	const response = {
-		status: status as "ok" | "degraded",
+	const response: ReadinessResponse = {
+		status: database === "connected" ? "ok" : "degraded",
 		env: c.env.CLOUDFLARE_ENV,
 		service: "tstack-on-cf",
 		time: new Date().toISOString(),

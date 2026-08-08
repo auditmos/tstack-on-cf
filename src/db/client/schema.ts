@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Domain model
-export const ClientSchema = z.object({
+const ClientSchema = z.object({
 	id: z.string().uuid(),
 	name: z.string(),
 	surname: z.string(),
@@ -36,16 +36,15 @@ export const PaginationRequestSchema = z.object({
 });
 export type PaginationRequest = z.infer<typeof PaginationRequestSchema>;
 
-export const PaginationMetaSchema = z.object({
+const PaginationMetaSchema = z.object({
 	total: z.number(),
 	limit: z.number(),
 	offset: z.number(),
 	hasMore: z.boolean(),
 });
-export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
 
 // Response
-export const ClientListResponseSchema = z.object({
+const ClientListResponseSchema = z.object({
 	data: z.array(ClientSchema),
 	pagination: PaginationMetaSchema,
 });
@@ -54,9 +53,4 @@ export type ClientListResponse = z.infer<typeof ClientListResponseSchema>;
 // Params
 export const IdParamSchema = z.object({
 	id: z.string().uuid("Invalid ID format"),
-});
-
-// Error
-export const ErrorResponseSchema = z.object({
-	error: z.string(),
 });

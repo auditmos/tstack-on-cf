@@ -1,0 +1,26 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": [
+		"src/routes/**/*.{ts,tsx}",
+		// drizzle-kit reads this path out of the `schema` field of every
+		// drizzle-*.config.ts as a plain string, which knip cannot follow. Naming
+		// it here makes it the entry point it already is, rather than an exclusion.
+		"src/db/schema.ts",
+		"taze.config.ts",
+		"scripts/*.ts",
+		"drizzle-*.config.ts"
+	],
+	"ignoreDependencies": [
+		// `cloudflare:test` is workerd's own test module, resolved by the runtime
+		// and never installed. knip reads the specifier as a package named
+		// `cloudflare`, which is not in the manifest and never will be.
+		"cloudflare"
+	],
+	"ignore": [
+		// Shadcn generates these and a cloner adds more with `pnpx shadcn add`;
+		// they are vendored rather than authored, so unused exports in them are
+		// upstream's business. Nothing joins this list without a reason written
+		// beside it — see src/dependency-hygiene.test.ts.
+		"src/components/ui/**"
+	]
+}

@@ -12,6 +12,17 @@ export class AppError extends Error {
 	}
 }
 
+/**
+ * @public
+ *
+ * Nothing in this template returns a `Result` — the endpoints throw `AppError`
+ * and let the Hono error handler map it. It ships anyway because it is half of
+ * the convention `.claude/rules/error-handling.md` states and the README
+ * documents: throw for the unexpected, return a `Result` when the caller has to
+ * branch on failure without a try/catch. A cloner writing that second kind of
+ * function should find the type already here, spelled the way the rules spell
+ * it, rather than invent a fourth shape for it.
+ */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: AppError };
 
 export function isUniqueViolation(error: unknown): boolean {

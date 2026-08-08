@@ -29,9 +29,14 @@ const RENAME_TARGETS: RenameTarget[] = [
 	{ file: "wrangler.jsonc", mode: "all-occurrences", needle: ORIGINAL_WORKER_NAME },
 ];
 
-const ENV_TEMPLATES: EnvTemplate[] = [
+/**
+ * Committed templates, and the per-environment files each one becomes. Both
+ * follow the `<real file>.example` convention, so which template produces which
+ * file is readable without consulting this list.
+ */
+export const ENV_TEMPLATES: EnvTemplate[] = [
 	{ template: ".env.example", targets: [".env"] },
-	{ template: ".example.vars", targets: [".dev.vars", ".staging.vars", ".production.vars"] },
+	{ template: ".dev.vars.example", targets: [".dev.vars", ".staging.vars", ".production.vars"] },
 ];
 
 const WRANGLER_FILES = ["wrangler.jsonc"];
@@ -111,9 +116,16 @@ function checkWranglerEnvs(file: string, required: string[]): string[] {
 	return required.filter((e) => !envs[e]).map((e) => `${file}: missing env.${e}`);
 }
 
-function fanoutEnv(template: string, target: string): FanoutResult {
-	const templatePath = abs(template);
-	const targetPath = abs(target);
+/**
+ * Copies one template to one target, unless the target is already there.
+ *
+ * Never overwriting is what makes the whole script re-runnable: by the second
+ * run the targets hold real credentials, and a bootstrap step that clobbers
+ * them is worse than one that was never run.
+ */
+export function fanoutEnv(template: string, target: string, root: string = ROOT): FanoutResult {
+	const templatePath = path.join(root, template);
+	const targetPath = path.join(root, target);
 	if (!fs.existsSync(templatePath)) return "no-template";
 	if (fs.existsSync(targetPath)) return "skipped";
 	fs.mkdirSync(path.dirname(targetPath), { recursive: true });
@@ -183,7 +195,11 @@ async function main(): Promise<void> {
 	stepNextSteps(name);
 }
 
-main().catch((err) => {
-	console.error(err);
-	process.exit(1);
-});
+// Only when run as a command. Importing this file — as the tests do — must not
+// leave a prompt waiting on stdin.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+	main().catch((err) => {
+		console.error(err);
+		process.exit(1);
+	});
+}

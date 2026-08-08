@@ -1,3 +1,11 @@
+# This is NOT a monorepo. It declares no packages and never will.
+#
+# The file exists solely because `allowBuilds` — pnpm's approval list for
+# dependencies permitted to run install scripts — is only read from here.
+# Without it, pnpm asks about these four on every fresh install.
+#
+# Delete the file and the prompts come back; add a `packages:` key and you have
+# opted into a workspace this template is not laid out for.
 allowBuilds:
   esbuild: true
   sharp: true

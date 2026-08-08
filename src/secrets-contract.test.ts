@@ -4,6 +4,14 @@ import { resolve } from "node:path";
 const ROOT = resolve(__dirname, "..");
 const WORKFLOW_DIR = resolve(ROOT, ".github", "workflows");
 
+/**
+ * The template for `.dev.vars`, named the way Cloudflare's own tooling expects:
+ * `<real file>.example`, the same shape as `.env.example`. Deploy-to-Cloudflare
+ * reads this name to prompt for a Worker's secrets, so the convention buys
+ * something concrete beyond consistency.
+ */
+const EXAMPLE_VARS = ".dev.vars.example";
+
 type SecretsBlock = { required?: string[] };
 type EnvBlock = { secrets?: SecretsBlock; vars?: Record<string, string> };
 type WranglerConfig = EnvBlock & { env?: Record<string, EnvBlock> };
@@ -27,7 +35,7 @@ function loadEnvKeys(file: string): string[] {
 
 describe("secrets contract", () => {
 	const config = loadWranglerConfig();
-	const exampleKeys = loadEnvKeys(".example.vars");
+	const exampleKeys = loadEnvKeys(EXAMPLE_VARS);
 
 	it("declares required secret names in wrangler.jsonc", () => {
 		expect(config.secrets?.required).toBeDefined();

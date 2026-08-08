@@ -12,7 +12,7 @@ Use it as the starting point for your next project — clone it, rename it, wire
 
 1. Click **Use this template** on GitHub (or `gh repo create --template`).
 2. `pnpm install`.
-3. `pnpm run init-project` — prompts for a kebab-case project name, renames `wrangler.jsonc` + `package.json`, and fans out `.env.example` → `.env` and `.example.vars` → `.dev.vars` / `.staging.vars` / `.production.vars`. Idempotent — re-runnable, never overwrites filled-in files. The script's "Next steps" output lists every field that still needs a value.
+3. `pnpm run init-project` — prompts for a kebab-case project name, renames `wrangler.jsonc` + `package.json`, and fans out `.env.example` → `.env` and `.dev.vars.example` → `.dev.vars` / `.staging.vars` / `.production.vars`. Idempotent — re-runnable, never overwrites filled-in files. The script's "Next steps" output lists every field that still needs a value.
 4. Provision a Neon database and fill `DATABASE_HOST/USERNAME/PASSWORD` in `.dev.vars` (and the staging / production variants when you deploy them).
 5. Run `pnpm cf-typegen && pnpm db:migrate:dev && pnpm dev`.
 6. *(Optional, when you're done with the demo)* delete `src/db/client/` and `src/hono/api/clients.ts`. Then start modelling your own domain.
@@ -47,7 +47,7 @@ After deleting, also drop the matching `src/readme-demo-cleanup.test.ts` (it exi
 pnpm install
 
 # Copy env template and fill in your Neon credentials
-cp .example.vars .dev.vars
+cp .dev.vars.example .dev.vars
 
 # Generate Cloudflare Env types
 pnpm cf-typegen

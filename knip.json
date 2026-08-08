@@ -7,12 +7,6 @@
 		"scripts/*.ts",
 		"drizzle-*.config.ts"
 	],
-	"ignoreDependencies": [
-		"cloudflare",
-		"@tanstack/react-form",
-		"@testing-library/dom",
-		"@testing-library/react",
-		"web-vitals"
-	],
+	"ignoreDependencies": ["cloudflare", "@tanstack/react-form", "web-vitals"],
 	"ignore": ["src/components/ui/**", "src/core/errors.ts", "src/db/**"]
 }

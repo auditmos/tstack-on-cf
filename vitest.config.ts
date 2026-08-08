@@ -7,6 +7,9 @@ const alias = { "@": resolve(import.meta.dirname, "src") };
 /** Anything ending `.worker.test.ts` runs in workerd; everything else in Node. */
 const WORKER_TESTS = "src/**/*.worker.test.ts";
 
+/** A `.tsx` test renders something, so it gets a DOM. */
+const COMPONENT_TESTS = "src/**/*.test.tsx";
+
 const APP_ENTRY = "@tanstack/react-start/server-entry";
 const APP_ENTRY_STUB = "\0app-entry-stub";
 
@@ -41,8 +44,21 @@ export default defineConfig({
 				test: {
 					name: "node",
 					globals: true,
-					include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.ts"],
+					include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
 					exclude: ["src/routes/**", WORKER_TESTS],
+				},
+			},
+			// Components, under a DOM. Rendering is the whole point of these, so
+			// they get jsdom rather than a runtime that can only answer requests.
+			{
+				resolve: { alias },
+				test: {
+					name: "components",
+					globals: true,
+					environment: "jsdom",
+					setupFiles: ["./src/dom-shims.ts"],
+					include: [COMPONENT_TESTS],
+					exclude: ["src/routes/**"],
 				},
 			},
 			// The real thing: workerd, the bindings from wrangler.jsonc, and the

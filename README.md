@@ -479,12 +479,23 @@ pnpm test:coverage  # v8 coverage
 - Route files (`src/routes/**`) are excluded from test discovery.
 - Test at module boundaries (exported queries, HTTP requests, user interactions), not internals. See `.claude/rules/deep-modules.md`.
 
-The suite is split across Vitest projects, both driven by that one `pnpm test`:
+The suite is split across Vitest projects, all driven by that one `pnpm test`:
 
 | Project | Runs | Files |
 |---------|------|-------|
-| `node` | Node | `src/**/*.test.ts(x)` |
+| `node` | Node | `src/**/*.test.ts`, `scripts/**/*.test.ts` |
 | `workers` | `workerd`, via `@cloudflare/vitest-pool-workers` | `src/**/*.worker.test.ts` |
+| `components` | jsdom | `src/**/*.test.tsx` |
+
+The suffix picks the project, so there is nothing to configure per file: name a
+test `*.test.tsx` and it renders under a DOM with Testing Library, `*.worker.test.ts`
+and it runs in the Workers runtime, anything else and it runs in Node.
+
+`src/dom-shims.ts` stands in for the browser APIs jsdom omits — `ResizeObserver`,
+which Radix primitives use to position themselves, and `matchMedia`, which the
+theme provider reads. `src/components/theme/theme.test.tsx` is the worked
+example: it opens the theme menu by keyboard and asserts the document actually
+darkens.
 
 Name a file `*.worker.test.ts` and it runs inside the real Workers runtime with the bindings from `wrangler.jsonc`, reachable through `cloudflare:test`:
 

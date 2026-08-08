@@ -80,7 +80,8 @@ Run manually before declaring done:
 - Vitest with globals enabled — no need to import `describe`/`it`/`expect`
 - Path alias `@` resolves to `src/`
 - Route files (`src/routes/**`) are excluded from test discovery
-- Name a file `*.worker.test.ts` to run it inside the real Workers runtime, with `wrangler.jsonc` bindings via `cloudflare:test`. Everything else runs in Node. Both from `pnpm test`
+- The filename picks the runtime, all from `pnpm test`: `*.worker.test.ts` runs inside the real Workers runtime with `wrangler.jsonc` bindings via `cloudflare:test`, `*.test.tsx` renders under jsdom with Testing Library, everything else runs in Node
+- Browser APIs jsdom lacks are stubbed in `src/dom-shims.ts` — add to it rather than mocking per test
 </important>
 
 <important if="you are creating or reviewing design documents">

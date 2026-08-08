@@ -4,7 +4,7 @@ import config from "../vitest.config";
 
 type InlineProject = {
 	plugins?: { name?: string }[];
-	test?: { name?: string; include?: string[]; exclude?: string[] };
+	test?: { name?: string; include?: string[]; exclude?: string[]; environment?: string };
 };
 
 const ROOT = resolve(__dirname, "..");
@@ -29,16 +29,28 @@ describe("vitest projects", () => {
 		).toBe(true);
 	});
 
-	it.each(["node", "workers"])("excludes route files from the %s project", (name) => {
+	// Component tests need a DOM, and the runtime that ships the Worker does not
+	// have one. Without this project the installed testing libraries are decoration.
+	it("runs one project under a DOM", () => {
+		const components = projects.find((p) => p.test?.name === "components");
+		expect(components?.test?.environment).toBe("jsdom");
+		expect(components?.test?.include).toContain("src/**/*.test.tsx");
+	});
+
+	it.each(
+		projects.map((p) => p.test?.name ?? ""),
+	)("excludes route files from the %s project", (name) => {
 		const project = projects.find((p) => p.test?.name === name);
 		expect(project?.test?.exclude).toContain("src/routes/**");
 	});
 
 	// Worker tests would otherwise be collected twice — once in workerd and once
-	// in Node, where `cloudflare:test` does not resolve.
+	// in Node, where `cloudflare:test` does not resolve. Component tests likewise:
+	// in Node there is no document to render into.
 	it("claims each test file for exactly one project", () => {
 		const node = projects.find((p) => p.test?.name === "node");
 		expect(node?.test?.exclude).toContain("src/**/*.worker.test.ts");
+		expect(node?.test?.include).not.toContain("src/**/*.test.tsx");
 	});
 });
 

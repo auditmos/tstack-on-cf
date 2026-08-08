@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/auditmos/tstack-on-cf/compare/v1.7.1...v1.8.0) (2026-08-08)
+
+
+### Features
+
+* **docs:** make the requirements directory real and dead pointers fatal ([76ba5c1](https://github.com/auditmos/tstack-on-cf/commit/76ba5c1001ab3f704036465aec5b4ee7f1b61881)), closes [#25](https://github.com/auditmos/tstack-on-cf/issues/25) [#29](https://github.com/auditmos/tstack-on-cf/issues/29)
+
 ## [1.7.1](https://github.com/auditmos/tstack-on-cf/compare/v1.7.0...v1.7.1) (2026-08-07)
 
 

@@ -162,7 +162,10 @@ Path alias `@/*` resolves to `src/*`.
   },
   "secrets": {
     "required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
-  }
+  },
+  "upload_source_maps": true,
+  "workers_dev": true,
+  "preview_urls": true
 }
 ```
 
@@ -173,6 +176,37 @@ Path alias `@/*` resolves to `src/*`.
 - Use `wrangler.jsonc` (not `.toml`) for configuration.
 - Prefer `custom_domain: true` over routes with `zone_name` — see `.claude/rules/cloudflare-deployment.md`.
 - Run `pnpm cf-typegen` whenever you add bindings to regenerate `worker-configuration.d.ts`.
+
+`upload_source_maps` is on, and inherited by every environment. Observability is
+already enabled above; without source maps the traces it collects point at
+minified output, which is the expensive half of the feature paying for the
+useless half.
+
+#### Reachability per environment
+
+Stated in the configuration rather than left to platform defaults, so you know
+where an environment answers before you deploy it — not after.
+
+| Environment | `workers.dev` URL | Preview URLs | Custom domain |
+| ----------- | ----------------- | ------------ | ------------- |
+| `dev` (top level) | on | on | — |
+| `staging` | on | on | commented placeholder |
+| `production` | **off** | **off** | commented placeholder |
+
+Production is deliberately unreachable until you fill in its custom domain. The
+demo API is public unauthenticated CRUD (see [Security posture](#security-posture))
+and a `workers.dev` URL is guessable, so the template will not put that
+combination on the internet for you. Uncomment the `routes` line in
+`env.production`, or set `workers_dev` back to `true` if you actually want the
+subdomain.
+
+#### Smart Placement
+
+Present in `wrangler.jsonc`, commented out. It moves your Worker's execution
+towards your database instead of towards your users, which pays off only for a
+specific shape of application. [The decision record](docs/decisions/smart-placement.md)
+covers when to enable it and how to measure whether it helped — the config
+points there rather than repeating it.
 
 ### Custom Server Entry (`src/server.ts`)
 

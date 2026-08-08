@@ -19,20 +19,51 @@
 		"logs": { "head_sampling_rate": 1 },
 		"traces": { "enabled": true, "head_sampling_rate": 0.01 }
 	},
+	// Without this, every stack trace in those logs points at minified output.
+	// Inheritable — every env below gets it, and none should turn it off.
+	"upload_source_maps": true,
+	// Smart Placement: off, deliberately. Uncomment to move execution towards
+	// the database instead of towards the user — worth it only if a request
+	// makes several sequential round trips to a back-end that lives in one
+	// place. Read docs/decisions/smart-placement.md first: it says when to
+	// enable, and how to tell afterwards whether it helped.
+	// "placement": { "mode": "smart" },
+	//
+	// Reachability, stated rather than inherited. `workers_dev` is the
+	// <name>.<subdomain>.workers.dev URL; `preview_urls` covers the per-version
+	// URLs, and defaults to whatever `workers_dev` is unless it is set here.
+	"workers_dev": true,
+	"preview_urls": true,
 	"env": {
 		"staging": {
 			"name": "tanstack-start-app-staging",
 			"vars": { "CLOUDFLARE_ENV": "staging" },
 			"secrets": {
 				"required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
-			}
+			},
+			// Reachable at the workers.dev subdomain, with preview URLs on, so a
+			// change can be looked at before it is promoted.
+			"workers_dev": true,
+			"preview_urls": true
+			// Custom domain — prefer this over a `routes` pattern with `zone_name`:
+			// it provisions the DNS record and the certificate for you. See
+			// .claude/rules/cloudflare-deployment.md.
+			// "routes": [{ "pattern": "staging.example.com", "custom_domain": true }]
 		},
 		"production": {
 			"name": "tanstack-start-app-production",
 			"vars": { "CLOUDFLARE_ENV": "production" },
 			"secrets": {
 				"required": ["DATABASE_HOST", "DATABASE_USERNAME", "DATABASE_PASSWORD"]
-			}
+			},
+			// Off, on purpose: the demo API is public unauthenticated CRUD, and a
+			// workers.dev URL is guessable. Production is therefore NOT reachable
+			// until you fill in the custom domain below — that is the forcing
+			// function, not a broken deploy. Flip these to true if you genuinely
+			// want the subdomain.
+			"workers_dev": false,
+			"preview_urls": false
+			// "routes": [{ "pattern": "app.example.com", "custom_domain": true }]
 		}
 	}
 }

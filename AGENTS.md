@@ -32,7 +32,7 @@ TanStack Start frontend + Hono API backend on Cloudflare Workers.
 pnpm dev                  # dev server (port 3000)
 pnpm build                # production build
 pnpm serve                # preview production build
-pnpm deploy               # build + wrangler deploy
+pnpm run deploy           # build + wrangler deploy (bare `pnpm deploy` is pnpm's own command)
 pnpm test                 # run all tests
 pnpm test:watch           # watch mode
 pnpm test:coverage        # with coverage

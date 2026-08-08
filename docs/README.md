@@ -4,8 +4,15 @@ The single source of truth for business requirements and design documents.
 
 `AGENTS.md` points agents here, so this directory has to contain something —
 a pointer to an empty directory is the same dead end as a pointer to a missing
-one. What it contains today are the decisions this template already made, so
-that neither a human nor an agent re-litigates them from scratch.
+one. What it contains today are the decisions this template already made, and
+the one procedure it cannot automate, so that neither a human nor an agent
+re-derives either from scratch.
+
+## Runbooks
+
+| Runbook | Summary |
+| ------- | ------- |
+| [Release & rollback](./release-runbook.md) | The manual release sequence per environment, why it is manual, and how to recover from a bad one |
 
 ## Decisions
 

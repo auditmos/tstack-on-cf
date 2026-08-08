@@ -69,7 +69,7 @@ The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 | `pnpm build` | Production build |
 | `pnpm serve` | Preview the production build locally |
 | `pnpm build:{staging,production}` | Build for a specific env (bakes env config via `vite build --mode <env>`) |
-| `pnpm deploy` | Build and deploy to the default (`dev`) Cloudflare Workers config |
+| `pnpm run deploy` | Build and deploy to the default (`dev`) Cloudflare Workers config — needs `pnpm run`, as bare `deploy` is pnpm's own workspace command |
 | `pnpm deploy:staging` | Build with `--mode staging` and deploy the pre-configured worker |
 | `pnpm deploy:production` | Build with `--mode production` and deploy the pre-configured worker |
 | `pnpm cf-typegen` | Generate `Env` types from `wrangler.jsonc` |
@@ -86,6 +86,8 @@ The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 | `pnpm release` | semantic-release |
 
 All `db:*` scripts load secrets via `@dotenvx/dotenvx` from `.dev.vars`, `.staging.vars`, or `.production.vars`.
+
+Knowing the deploy scripts is not the same as knowing the order to run them in. Releasing is a manual procedure by decision, and the [Release & rollback runbook](docs/release-runbook.md) is that procedure: migrate, build, deploy and verify per environment, plus how to ship to a fraction of traffic first and how to get back to a working version.
 
 ## Project Structure
 

@@ -504,9 +504,19 @@ Add a project to `vitest.config.ts` to run tests under another environment — e
 This template is set up for agent-assisted development:
 
 - `.claude/CLAUDE.md` — project-wide instructions.
-- `.claude/rules/` — topic rules (`general.md`, `deep-modules.md`, `error-handling.md`, `atomic-imports.md`, `cloudflare-deployment.md`, plus stack-specific rules under `db/` and `frontend/`) that activate automatically based on the files being edited.
+- `.claude/rules/` — topic rules (`general.md`, `deep-modules.md`, `error-handling.md`, `atomic-imports.md`, `cloudflare-deployment.md`, plus stack-specific rules under `.claude/rules/db/` and `.claude/rules/frontend/`) that activate automatically based on the files being edited.
 - `AGENTS.md` — agent workflow guide.
-- `/docs` — single source of truth for business requirements / design docs.
+- `docs/` — single source of truth for business requirements and design docs.
+
+Not every agent tool is supported to the same degree, and guessing wrong wastes a session. The support level of each is stated in [Agent support](docs/decisions/agent-support.md).
+
+### Decisions already made for you
+
+Three choices this template made on your behalf are written down rather than left to be inferred from the configuration. Each records what was decided, why, and the conditions under which you should decide differently:
+
+- [Database driver](docs/decisions/database-driver.md) — why the fetch-based Neon driver rather than Hyperdrive.
+- [Smart Placement](docs/decisions/smart-placement.md) — why it ships off, when to turn it on, and how to measure whether it helped.
+- [Agent support](docs/decisions/agent-support.md) — which agent tooling is first-class, best-effort, or unsupported.
 
 ## Learn More
 

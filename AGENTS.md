@@ -84,7 +84,8 @@ Run manually before declaring done:
 </important>
 
 <important if="you are creating or reviewing design documents">
-- `/docs` is the single source of truth for business requirements
+- `docs/` is the single source of truth for business requirements
+- Standing decisions live in `docs/decisions/` — read before re-litigating one
 - Apply review notes/status updates directly in the corresponding design doc
 - Never create separate md files for reviews/audits/analyses unless explicitly asked
 </important>

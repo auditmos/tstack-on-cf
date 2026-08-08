@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/auditmos/tstack-on-cf/compare/v1.8.0...v1.9.0) (2026-08-08)
+
+
+### Features
+
+* **cloudflare:** give the Worker config a stated posture ([aae03ea](https://github.com/auditmos/tstack-on-cf/commit/aae03eace37ce7e32bf9b870c67e5748aedf826c)), closes [#29](https://github.com/auditmos/tstack-on-cf/issues/29) [#32](https://github.com/auditmos/tstack-on-cf/issues/32)
+
 # [1.8.0](https://github.com/auditmos/tstack-on-cf/compare/v1.7.1...v1.8.0) (2026-08-08)
 
 

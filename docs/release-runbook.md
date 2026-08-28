@@ -251,9 +251,13 @@ constraint the migration ordering rule imposes.
 This is the one non-obvious thing about releasing here, and getting it wrong
 points a command at the wrong Worker.
 
-`vite build --mode <env>` resolves the `env.<name>` block from `wrangler.jsonc`
-and writes a flattened config to `dist/server/wrangler.json` — worker name, vars
-and routing already applied, with **no environment blocks left in it**. It also
+`CLOUDFLARE_ENV=<env> vite build` resolves the `env.<name>` block from
+`wrangler.jsonc` and writes a flattened config to `dist/server/wrangler.json` —
+worker name, vars and routing already applied, with **no environment blocks left
+in it**. The variable is what selects the block; Vite's `--mode` is a Vite
+concept the plugin never reads, and a build carrying only the mode flattens the
+*top-level* block instead — so the deploy that follows silently overwrites the
+dev Worker and still reports success. It also
 writes `.wrangler/deploy/config.json`, a pointer that redirects the
 code-uploading commands to that flattened file. Hence `--env=''`: the
 environment is already baked in, and there is no named env left to select.

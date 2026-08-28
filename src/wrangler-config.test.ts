@@ -153,15 +153,20 @@ describe("package.json deploy scripts", () => {
 		scripts: Record<string, string>;
 	};
 
-	it("deploy:staging builds with --mode staging and deploys", () => {
-		expect(pkg.scripts["build:staging"]).toMatch(/vite build --mode staging/);
-		expect(pkg.scripts["deploy:staging"]).toMatch(/build:staging/);
-		expect(pkg.scripts["deploy:staging"]).toMatch(/wrangler deploy/);
+	// `@cloudflare/vite-plugin` selects the wrangler env block from the
+	// CLOUDFLARE_ENV variable. Vite's `--mode` is a Vite concept the plugin
+	// does not read, so a build that sets only the mode resolves to the
+	// top-level block instead — same bundle, but the dev Worker's name, the
+	// dev vars, and none of the env's routes. `wrangler deploy` then publishes
+	// that over the dev Worker and reports success, which is the worst
+	// available outcome: a green deploy of the wrong thing.
+	it.each(DEPLOYED_ENVS)("builds %s with CLOUDFLARE_ENV set", (env) => {
+		expect(pkg.scripts[`build:${env}`]).toMatch(new RegExp(`CLOUDFLARE_ENV=${env}(\\s|$)`));
+		expect(pkg.scripts[`build:${env}`]).toMatch(/vite build/);
 	});
 
-	it("deploy:production builds with --mode production and deploys", () => {
-		expect(pkg.scripts["build:production"]).toMatch(/vite build --mode production/);
-		expect(pkg.scripts["deploy:production"]).toMatch(/build:production/);
-		expect(pkg.scripts["deploy:production"]).toMatch(/wrangler deploy/);
+	it.each(DEPLOYED_ENVS)("deploys %s from the build it just made", (env) => {
+		expect(pkg.scripts[`deploy:${env}`]).toMatch(new RegExp(`build:${env}`));
+		expect(pkg.scripts[`deploy:${env}`]).toMatch(/wrangler deploy/);
 	});
 });

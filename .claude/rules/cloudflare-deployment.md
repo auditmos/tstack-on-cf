@@ -26,14 +26,22 @@
 ## Vite Plugin Environments (`@cloudflare/vite-plugin`)
 
 - The Vite plugin reads all env blocks from `wrangler.jsonc` and resolves bindings automatically
-- `vite build --mode staging` bakes environment config (routes, bindings, worker name) into the build output
-- `wrangler deploy --env=''` deploys the pre-configured build — the env is already embedded by the plugin
+- **`CLOUDFLARE_ENV`, not `--mode`, selects the env block.** Vite's `--mode` is a Vite concept the plugin does not read; a build that sets only the mode silently resolves to the top-level block — same bundle, but the dev Worker's name, the dev `vars`, and none of the env's routes. `wrangler deploy` then publishes it over the dev Worker and reports success
+- `CLOUDFLARE_ENV=<env>` bakes environment config (routes, bindings, worker name) into `dist/server/wrangler.json`
+- `wrangler deploy --env=''` deploys that pre-configured build — the env is already embedded by the plugin
+
+Verify before trusting a deploy — the failure mode is a green deploy of the wrong Worker, so check the name rather than the exit code:
+
+```bash
+CLOUDFLARE_ENV=staging vite build
+node -e "console.log(require('./dist/server/wrangler.json').name)"   # <app>-staging
+```
 
 ## Deploy Script Pattern
 
 ```jsonc
-// Vite plugin — env baked into build via --mode
-"build:staging": "vite build --mode staging",
+// CLOUDFLARE_ENV picks the wrangler env; --mode stays for Vite's own .env files
+"build:staging": "CLOUDFLARE_ENV=staging vite build --mode staging",
 "deploy:staging": "pnpm run build:staging && wrangler deploy --env=''"
 ```
 

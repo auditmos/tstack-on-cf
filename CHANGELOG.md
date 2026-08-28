@@ -1,3 +1,11 @@
+## [1.9.1](https://github.com/auditmos/tstack-on-cf/compare/v1.9.0...v1.9.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* **deploy:** select the wrangler env with CLOUDFLARE_ENV, not vite --mode ([7113c6c](https://github.com/auditmos/tstack-on-cf/commit/7113c6c8b757c0f64ff1bcdee5b6a398381e332c))
+* **test:** give the component project a working localStorage ([0acf0c1](https://github.com/auditmos/tstack-on-cf/commit/0acf0c13804b3fb7becfa4b6fab70042bb6fc54c))
+
 # [1.9.0](https://github.com/auditmos/tstack-on-cf/compare/v1.8.0...v1.9.0) (2026-08-08)
 
 

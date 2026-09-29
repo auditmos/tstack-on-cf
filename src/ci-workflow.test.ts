@@ -54,6 +54,20 @@ describe("CI workflow", () => {
 		expect(peers).toBeGreaterThan(install);
 		expect(peers).toBeLessThan(commands.indexOf("pnpm run build"));
 	});
+
+	// The pre-push hook regenerates worker-configuration.d.ts but cannot stop
+	// a push that leaves it stale, and every later step checks against the
+	// committed file. Regenerating and diffing is the only way CI can tell.
+	it("fails when the committed worker types differ from a fresh typegen, before linting", () => {
+		const commands = runCommands(CI_WORKFLOW);
+		const drift = commands.findIndex(
+			(command) =>
+				command.includes("pnpm run cf-typegen") &&
+				command.includes("git diff --exit-code worker-configuration.d.ts"),
+		);
+		expect(drift).toBeGreaterThan(commands.indexOf("pnpm install --frozen-lockfile"));
+		expect(drift).toBeLessThan(commands.indexOf("pnpm run lint:ci"));
+	});
 });
 
 // peter-evans/create-pull-request pushes with GITHUB_TOKEN. GitHub creates the

@@ -50,6 +50,13 @@ jobs:
       - name: Peer dependencies
         run: pnpm peers check
 
+      # Every later step reads the committed worker-configuration.d.ts, so a
+      # compat-date or wrangler bump that skips typegen would type-check green
+      # against types for a runtime we no longer ship. Secret names live in
+      # wrangler.jsonc, so the output here matches a developer's machine.
+      - name: Worker types up to date
+        run: pnpm run cf-typegen && git diff --exit-code worker-configuration.d.ts
+
       - name: Lint
         run: pnpm run lint:ci
 

@@ -1,4 +1,5 @@
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Github } from "@/components/icons/github";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 

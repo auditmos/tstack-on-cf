@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Github, Menu } from "lucide-react";
+import { ExternalLink, Menu } from "lucide-react";
 import * as React from "react";
+import { Github } from "@/components/icons/github";
 import { ThemeToggle } from "@/components/theme";
 import { Button } from "@/components/ui/button";
 import {

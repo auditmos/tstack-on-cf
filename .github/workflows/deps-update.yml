@@ -79,7 +79,7 @@ jobs:
           commit-message: "chore(deps): weekly minor + patch bumps"
           title: "chore(deps): weekly minor + patch bumps"
           body: |
-            Automated weekly run of `pnpm deps:update` (`taze -r -w`) +
+            Automated weekly run of `pnpm deps:update` (`taze -r -w --no-node-version`) +
             `pnpm install`.
 
             Validated by this job before opening the PR:

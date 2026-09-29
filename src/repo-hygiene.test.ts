@@ -12,7 +12,10 @@ function read(file: string): string {
 // on whatever alias the machine resolves, which is how a cloner ends up
 // debugging a runtime difference that is not their code.
 describe("Node version pin", () => {
-	const pkg = JSON.parse(read("package.json")) as { engines?: { node?: string } };
+	const pkg = JSON.parse(read("package.json")) as {
+		engines?: { node?: string };
+		scripts?: Record<string, string>;
+	};
 
 	it("declares an engine constraint in the manifest", () => {
 		expect(pkg.engines?.node).toBeDefined();
@@ -24,6 +27,13 @@ describe("Node version pin", () => {
 
 	it("names the same version in both", () => {
 		expect(pkg.engines?.node).toContain(read(".node-version").trim());
+	});
+
+	// taze 21 started bumping `.node-version` alongside dependencies. It never
+	// touches `engines`, so a bump splits the pin, and the weekly bot runs
+	// deps:update unattended. Node moves on purpose, not as a side effect.
+	it.each(["deps:update", "deps:major:update"])("is left alone by %s", (script) => {
+		expect(pkg.scripts?.[script]).toMatch(/^taze\b.*\s--no-node-version\b/);
 	});
 });
 

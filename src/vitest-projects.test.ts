@@ -24,9 +24,9 @@ describe("vitest projects", () => {
 	it("runs one project inside the Workers runtime", () => {
 		const workers = projects.find((p) => p.test?.name === "workers");
 		expect(workers).toBeDefined();
-		expect(
-			workers?.plugins?.some((plugin) => plugin?.name === "@cloudflare/vitest-pool-workers"),
-		).toBe(true);
+		expect(workers?.plugins?.some((plugin) => plugin?.name === "@cloudflare/vitest-plugin")).toBe(
+			true,
+		);
 	});
 
 	// Component tests need a DOM, and the runtime that ships the Worker does not

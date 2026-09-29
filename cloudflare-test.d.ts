@@ -1,4 +1,4 @@
-/// <reference types="@cloudflare/vitest-pool-workers/types" />
+/// <reference types="@cloudflare/vitest-plugin/types" />
 
 // Types the `env` that `cloudflare:test` hands to a `*.worker.test.ts` file as
 // the Worker's own bindings, so a test reaching for a binding the Worker does

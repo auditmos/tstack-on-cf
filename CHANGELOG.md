@@ -1,3 +1,11 @@
+## [1.9.2](https://github.com/auditmos/tstack-on-cf/compare/v1.9.1...v1.9.2) (2026-09-29)
+
+
+### Bug Fixes
+
+* **deps:** keep taze from moving the Node pin ([0276cd2](https://github.com/auditmos/tstack-on-cf/commit/0276cd25e1306d1bfa2bf52d4bf82071758945ab))
+* **init:** rename the template's name in the docs too ([16c9894](https://github.com/auditmos/tstack-on-cf/commit/16c9894224e196c326d26856195c0bc06543b682)), closes [#41](https://github.com/auditmos/tstack-on-cf/issues/41)
+
 ## [1.9.1](https://github.com/auditmos/tstack-on-cf/compare/v1.9.0...v1.9.1) (2026-08-28)
 
 

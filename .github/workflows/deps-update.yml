@@ -45,6 +45,15 @@ jobs:
       - name: Refresh lockfile
         run: pnpm install --no-frozen-lockfile
 
+      # A bump can leave a peer unmet, and pnpm only warns (#40).
+      - name: Peer dependencies
+        run: pnpm peers check
+
+      # CI diffs worker-configuration.d.ts against a fresh typegen, and the
+      # output follows the wrangler version, so commit it regenerated.
+      - name: Generate Worker types
+        run: pnpm run cf-typegen
+
       - name: Lint
         run: pnpm run lint:ci
 
@@ -56,6 +65,9 @@ jobs:
 
       - name: Knip
         run: pnpm run knip
+
+      - name: Build
+        run: pnpm run build
 
       - name: Open PR
         id: pr
@@ -71,10 +83,13 @@ jobs:
             `pnpm install`.
 
             Validated by this job before opening the PR:
+            - `pnpm peers check`
+            - `pnpm cf-typegen` (committed with the bumps)
             - `pnpm lint:ci`
             - `pnpm types`
             - `pnpm test`
             - `pnpm knip`
+            - `pnpm build`
 
             The CI workflow is dispatched onto this branch by the step after
             PR creation, so the same checks a human PR runs appear here too.

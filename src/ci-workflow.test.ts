@@ -91,3 +91,36 @@ describe("bot pull requests get the same checks", () => {
 		expect(body).toMatch(/^\s*actions:\s*write/m);
 	});
 });
+
+// The weekly job validates its own bumps before opening a pull request. #40
+// passed every check it ran and still broke the build, because the job never
+// built and never looked at peers.
+describe("weekly deps job", () => {
+	const DEPS_WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "deps-update.yml");
+	const REFRESH = "pnpm install --no-frozen-lockfile";
+
+	it("checks peer dependencies once the bumped lockfile is resolved", () => {
+		const commands = runCommands(DEPS_WORKFLOW);
+		expect(commands.indexOf("pnpm peers check")).toBeGreaterThan(commands.indexOf(REFRESH));
+	});
+
+	// CI diffs the committed worker types against a fresh typegen, and the
+	// output tracks the wrangler version. A PR that bumps wrangler without
+	// regenerating would fail that check every week.
+	it("regenerates the worker types for the bumped wrangler before type-checking", () => {
+		const commands = runCommands(DEPS_WORKFLOW);
+		const typegen = commands.indexOf("pnpm run cf-typegen");
+		expect(typegen).toBeGreaterThan(commands.indexOf(REFRESH));
+		expect(typegen).toBeLessThan(commands.indexOf("pnpm run types"));
+	});
+
+	// The build is the step #40 failed, and the only one the job skipped.
+	it("builds the bumped tree before handing the branch to CI", () => {
+		const commands = runCommands(DEPS_WORKFLOW);
+		const build = commands.indexOf("pnpm run build");
+		expect(build).toBeGreaterThan(commands.indexOf(REFRESH));
+		expect(build).toBeLessThan(
+			commands.findIndex((command) => command.startsWith("gh workflow run ci.yml")),
+		);
+	});
+});

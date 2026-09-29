@@ -3,6 +3,14 @@ import { resolve } from "node:path";
 
 const CI_WORKFLOW = resolve(__dirname, "..", ".github", "workflows", "ci.yml");
 
+/** The workflow's single-line `run:` commands, in the order the job runs them. */
+function runCommands(file: string): string[] {
+	return readFileSync(file, "utf8")
+		.split("\n")
+		.map((line) => line.match(/^\s*run:\s+(.+?)\s*$/)?.[1])
+		.filter((command): command is string => command !== undefined);
+}
+
 describe("CI workflow", () => {
 	it("exists", () => {
 		expect(existsSync(CI_WORKFLOW)).toBe(true);
@@ -33,6 +41,18 @@ describe("CI workflow", () => {
 
 	it("is dispatchable, so a run can be requested for a branch", () => {
 		expect(readFileSync(CI_WORKFLOW, "utf8")).toMatch(/^\s*workflow_dispatch:/m);
+	});
+
+	// pnpm only warns about an unmet peer, and it skips the peer check entirely
+	// when it installs from an existing lockfile, so #40 installed cleanly and
+	// only broke at build. Checking right after install names the peer instead.
+	it("checks peer dependencies after install and before the build", () => {
+		const commands = runCommands(CI_WORKFLOW);
+		const install = commands.indexOf("pnpm install --frozen-lockfile");
+		const peers = commands.indexOf("pnpm peers check");
+		expect(install).toBeGreaterThanOrEqual(0);
+		expect(peers).toBeGreaterThan(install);
+		expect(peers).toBeLessThan(commands.indexOf("pnpm run build"));
 	});
 });
 

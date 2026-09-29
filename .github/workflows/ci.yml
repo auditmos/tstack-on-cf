@@ -45,6 +45,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # pnpm skips its peer check when installing from a lockfile, so an unmet
+      # peer installs cleanly and only surfaces as a broken build (#40).
+      - name: Peer dependencies
+        run: pnpm peers check
+
       - name: Lint
         run: pnpm run lint:ci
 

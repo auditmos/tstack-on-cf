@@ -3,7 +3,8 @@
  * One-shot project bootstrap. Idempotent — safe to re-run.
  *
  * 1. Prompt once for kebab-case project name.
- * 2. Rename root package.json + wrangler.jsonc (skip if already renamed).
+ * 2. Rename the project in package.json, wrangler.jsonc and the docs that
+ *    quote it (skip if already renamed).
  * 3. Warn if wrangler.jsonc lacks env.staging / env.production blocks.
  * 4. Fan out *.example templates into per-environment files (skip if exists).
  * 5. Print a next-steps checklist.
@@ -15,7 +16,7 @@ import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const ORIGINAL_WORKER_NAME = "tanstack-start-app";
+export const ORIGINAL_WORKER_NAME = "tanstack-start-app";
 
 type RenameTarget =
 	| { file: string; mode: "package-name" }
@@ -27,6 +28,8 @@ type FanoutResult = "copied" | "skipped" | "no-template";
 const RENAME_TARGETS: RenameTarget[] = [
 	{ file: "package.json", mode: "package-name" },
 	{ file: "wrangler.jsonc", mode: "all-occurrences", needle: ORIGINAL_WORKER_NAME },
+	{ file: "README.md", mode: "all-occurrences", needle: ORIGINAL_WORKER_NAME },
+	{ file: "docs/release-runbook.md", mode: "all-occurrences", needle: ORIGINAL_WORKER_NAME },
 ];
 
 /**
@@ -91,11 +94,22 @@ function renameAllOccurrences(file: string, name: string, needle: string): "rena
 	return "renamed";
 }
 
-function applyRename(target: RenameTarget, name: string): RenameResult {
-	const file = abs(target.file);
+function applyRename(target: RenameTarget, name: string, root: string): RenameResult {
+	const file = path.join(root, target.file);
 	if (!fs.existsSync(file)) return "missing";
 	if (target.mode === "package-name") return renamePackageJson(file, name);
 	return renameAllOccurrences(file, name, target.needle);
+}
+
+/** Rewrites every reference to the template's name, reporting per file. */
+export function renameProject(
+	name: string,
+	root: string = ROOT,
+): { file: string; result: RenameResult }[] {
+	return RENAME_TARGETS.map((target) => ({
+		file: target.file,
+		result: applyRename(target, name, root),
+	}));
 }
 
 function stripJsonc(content: string): string {
@@ -143,9 +157,8 @@ function symbolFor(result: RenameResult | FanoutResult): string {
 
 function stepRename(name: string): void {
 	console.log("[1/4] Rename project references");
-	for (const target of RENAME_TARGETS) {
-		const result = applyRename(target, name);
-		console.log(`      ${symbolFor(result)} ${target.file} (${result})`);
+	for (const { file, result } of renameProject(name)) {
+		console.log(`      ${symbolFor(result)} ${file} (${result})`);
 	}
 }
 

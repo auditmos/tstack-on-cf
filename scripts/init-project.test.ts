@@ -1,9 +1,52 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { ENV_TEMPLATES, fanoutEnv } from "./init-project";
+import { dirname, join, resolve } from "node:path";
+import { ENV_TEMPLATES, fanoutEnv, ORIGINAL_WORKER_NAME, renameProject } from "./init-project";
 
 const ROOT = resolve(__dirname, "..");
+
+// Runs against the fixed original name, not whatever wrangler.jsonc says now,
+// so it holds in the template and in every project initialised from it: in the
+// template it proves the rename reaches every mention, and in a derived project
+// the script is the only file left naming the template.
+describe("project rename", () => {
+	let root: string;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), "init-project-rename-"));
+	});
+
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	it("leaves no tracked file naming the template except the script that knows it", () => {
+		const mentions = execFileSync("git", ["grep", "-l", "-F", ORIGINAL_WORKER_NAME], { cwd: ROOT })
+			.toString()
+			.trim()
+			.split("\n");
+		for (const file of mentions) {
+			mkdirSync(dirname(join(root, file)), { recursive: true });
+			cpSync(join(ROOT, file), join(root, file));
+		}
+
+		renameProject("my-app", root);
+
+		const leftovers = mentions.filter((file) =>
+			readFileSync(join(root, file), "utf8").includes(ORIGINAL_WORKER_NAME),
+		);
+		expect(leftovers).toEqual(["scripts/init-project.ts"]);
+	});
+});
 
 describe("env template fan-out", () => {
 	// Renaming a template without renaming it here leaves the bootstrap step

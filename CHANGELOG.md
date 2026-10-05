@@ -1,3 +1,19 @@
+# [2.0.0](https://github.com/auditmos/tstack-on-cf/compare/v1.9.3...v2.0.0) (2026-10-05)
+
+
+### Features
+
+* **api:** wrap responses in { data }, return 204 on delete ([d771f99](https://github.com/auditmos/tstack-on-cf/commit/d771f99afe1383ace6fd87061ebb9449c222c696))
+
+
+### BREAKING CHANGES
+
+* **api:** GET /api/clients/:id, POST and PUT return { data: client }
+instead of the bare client; DELETE returns 204 with no body instead of
+{ success: true }.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
 ## [1.9.3](https://github.com/auditmos/tstack-on-cf/compare/v1.9.2...v1.9.3) (2026-10-05)
 
 

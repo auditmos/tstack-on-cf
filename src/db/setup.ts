@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
+import { InvariantError } from "@/core/errors";
 
 // Cached per Worker isolate (not per request). initDatabase() is idempotent —
 // see workers-best-practices rule "Do not store request-scoped state in global scope".
@@ -19,6 +20,6 @@ export function initDatabase(config: DbConfig) {
 }
 
 export function getDb() {
-	if (!db) throw new Error("Database not initialized. Call initDatabase() first.");
+	if (!db) throw new InvariantError("Database not initialized. Call initDatabase() first.");
 	return db;
 }

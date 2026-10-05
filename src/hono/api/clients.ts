@@ -11,27 +11,22 @@ import {
 	updateClient,
 } from "@/db/client";
 import { createHono } from "@/hono/factory";
+import { parseRequest } from "@/hono/validation";
 
 const clientsEndpoint = createHono();
 
 clientsEndpoint.get("/", async (c) => {
-	const parsed = PaginationRequestSchema.safeParse({
+	const pagination = parseRequest(PaginationRequestSchema, {
 		limit: c.req.query("limit"),
 		offset: c.req.query("offset"),
 	});
-	if (!parsed.success) {
-		throw new AppError(parsed.error.message, "VALIDATION", 400);
-	}
-	const result = await getClients(parsed.data);
+	const result = await getClients(pagination);
 	return c.json(result);
 });
 
 clientsEndpoint.get("/:id", async (c) => {
-	const parsed = IdParamSchema.safeParse({ id: c.req.param("id") });
-	if (!parsed.success) {
-		throw new AppError(parsed.error.message, "VALIDATION", 400);
-	}
-	const client = await getClient(parsed.data.id);
+	const { id } = parseRequest(IdParamSchema, { id: c.req.param("id") });
+	const client = await getClient(id);
 	if (!client) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}
@@ -39,13 +34,9 @@ clientsEndpoint.get("/:id", async (c) => {
 });
 
 clientsEndpoint.post("/", async (c) => {
-	const body = await c.req.json();
-	const parsed = ClientCreateRequestSchema.safeParse(body);
-	if (!parsed.success) {
-		throw new AppError(parsed.error.message, "VALIDATION", 400);
-	}
+	const data = parseRequest(ClientCreateRequestSchema, await c.req.json());
 	try {
-		const client = await createClient(parsed.data);
+		const client = await createClient(data);
 		return c.json(client, 201);
 	} catch (err) {
 		if (isUniqueViolation(err)) {
@@ -56,16 +47,9 @@ clientsEndpoint.post("/", async (c) => {
 });
 
 clientsEndpoint.put("/:id", async (c) => {
-	const idParsed = IdParamSchema.safeParse({ id: c.req.param("id") });
-	if (!idParsed.success) {
-		throw new AppError(idParsed.error.message, "VALIDATION", 400);
-	}
-	const body = await c.req.json();
-	const parsed = ClientUpdateRequestSchema.safeParse(body);
-	if (!parsed.success) {
-		throw new AppError(parsed.error.message, "VALIDATION", 400);
-	}
-	const client = await updateClient(idParsed.data.id, parsed.data);
+	const { id } = parseRequest(IdParamSchema, { id: c.req.param("id") });
+	const data = parseRequest(ClientUpdateRequestSchema, await c.req.json());
+	const client = await updateClient(id, data);
 	if (!client) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}
@@ -73,11 +57,8 @@ clientsEndpoint.put("/:id", async (c) => {
 });
 
 clientsEndpoint.delete("/:id", async (c) => {
-	const parsed = IdParamSchema.safeParse({ id: c.req.param("id") });
-	if (!parsed.success) {
-		throw new AppError(parsed.error.message, "VALIDATION", 400);
-	}
-	const deleted = await deleteClient(parsed.data.id);
+	const { id } = parseRequest(IdParamSchema, { id: c.req.param("id") });
+	const deleted = await deleteClient(id);
 	if (!deleted) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}

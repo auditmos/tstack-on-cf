@@ -21,13 +21,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { ApiError, toApiError } from "@/core/errors";
 import type { Client, ClientCreateInput } from "@/db/client";
 
 const API_BASE = "/api/clients";
 
 async function fetchClients() {
 	const res = await fetch(API_BASE);
-	if (!res.ok) throw new Error("Failed to fetch clients");
+	if (!res.ok) throw await toApiError(res, "Failed to fetch clients");
 	return res.json() as Promise<{ data: Client[]; pagination: { total: number } }>;
 }
 
@@ -37,10 +38,7 @@ async function apiCreateClient(data: ClientCreateInput) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	if (!res.ok) {
-		const body: { error?: string } = await res.json();
-		throw new Error(body.error || "Failed");
-	}
+	if (!res.ok) throw await toApiError(res, "Failed to create client");
 	return res.json() as Promise<Client>;
 }
 
@@ -50,16 +48,61 @@ async function apiUpdateClient({ id, ...data }: { id: string } & Partial<ClientC
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	if (!res.ok) {
-		const body: { error?: string } = await res.json();
-		throw new Error(body.error || "Failed to update client");
-	}
+	if (!res.ok) throw await toApiError(res, "Failed to update client");
 	return res.json() as Promise<Client>;
 }
 
 async function apiDeleteClient(id: string) {
 	const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-	if (!res.ok) throw new Error("Failed to delete client");
+	if (!res.ok) throw await toApiError(res, "Failed to delete client");
+}
+
+const CLIENT_FIELDS = ["name", "surname", "email"] as const;
+type ClientField = (typeof CLIENT_FIELDS)[number];
+
+function isClientField(value: string | undefined): value is ClientField {
+	return CLIENT_FIELDS.some((field) => field === value);
+}
+
+interface PlacedError {
+	fields: Partial<Record<ClientField, string>>;
+	form: string | null;
+}
+
+/** Where a failed save is shown: under the field the API named, or once for the whole form. */
+function placeError(error: Error | null): PlacedError {
+	if (error instanceof ApiError && isClientField(error.field)) {
+		return { fields: { [error.field]: error.message }, form: null };
+	}
+	return { fields: {}, form: error?.message ?? null };
+}
+
+interface FieldProps extends React.ComponentProps<typeof Input> {
+	name: ClientField;
+	label: string;
+	error?: string;
+}
+
+/** A labelled input that shows, and announces to assistive tech, the error the API pinned to it. */
+function Field({ name, label, error, ...inputProps }: FieldProps) {
+	const errorId = `${name}-error`;
+	return (
+		<div className="space-y-2">
+			<Label htmlFor={name}>{label}</Label>
+			<Input
+				id={name}
+				name={name}
+				aria-invalid={error ? true : undefined}
+				aria-describedby={error ? errorId : undefined}
+				{...inputProps}
+			/>
+			{error && (
+				<p id={errorId} className="text-sm text-destructive">
+					{error}
+				</p>
+			)}
+		</div>
+	);
 }
 
 export function ClientsPage() {
@@ -123,7 +166,7 @@ export function ClientsPage() {
 	}
 
 	const isMutating = createMutation.isPending || updateMutation.isPending;
-	const mutationError = createMutation.error || updateMutation.error;
+	const saveError = placeError(createMutation.error || updateMutation.error);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -156,39 +199,31 @@ export function ClientsPage() {
 									<DialogTitle>{editingClient ? "Edit Client" : "New Client"}</DialogTitle>
 								</DialogHeader>
 								<form onSubmit={handleSubmit} className="space-y-4">
-									<div className="space-y-2">
-										<Label htmlFor="name">Name</Label>
-										<Input
-											id="name"
-											name="name"
-											required
-											maxLength={30}
-											defaultValue={editingClient?.name ?? ""}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="surname">Surname</Label>
-										<Input
-											id="surname"
-											name="surname"
-											required
-											maxLength={30}
-											defaultValue={editingClient?.surname ?? ""}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="email">Email</Label>
-										<Input
-											id="email"
-											name="email"
-											type="email"
-											required
-											defaultValue={editingClient?.email ?? ""}
-										/>
-									</div>
-									{mutationError && (
-										<p className="text-sm text-destructive">{mutationError.message}</p>
-									)}
+									<Field
+										name="name"
+										label="Name"
+										required
+										maxLength={30}
+										defaultValue={editingClient?.name ?? ""}
+										error={saveError.fields.name}
+									/>
+									<Field
+										name="surname"
+										label="Surname"
+										required
+										maxLength={30}
+										defaultValue={editingClient?.surname ?? ""}
+										error={saveError.fields.surname}
+									/>
+									<Field
+										name="email"
+										label="Email"
+										type="email"
+										required
+										defaultValue={editingClient?.email ?? ""}
+										error={saveError.fields.email}
+									/>
+									{saveError.form && <p className="text-sm text-destructive">{saveError.form}</p>}
 									<Button type="submit" disabled={isMutating} className="w-full">
 										{isMutating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 										{editingClient ? "Update" : "Create"}

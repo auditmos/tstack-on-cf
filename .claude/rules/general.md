@@ -18,19 +18,7 @@ type Result<T> = { success: boolean; data?: T; error?: Error }
 
 ## Error Handling
 
-- Create custom error classes extending `Error`
-- Never `throw new Error(string)`—use typed errors
-- Use `Result<T>` pattern for recoverable errors
-- Let unexpected errors propagate for logging
-
-```ts
-class ValidationError extends Error {
-  constructor(public field: string, message: string) {
-    super(message)
-    this.name = 'ValidationError'
-  }
-}
-```
+Throw a named class from `src/core/errors.ts`, never a bare `Error` — which class when is in `error-handling.md`.
 
 ## Naming
 

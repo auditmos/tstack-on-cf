@@ -1,4 +1,5 @@
 import * as React from "react";
+import { InvariantError } from "@/core/errors";
 
 type Theme = "dark" | "light" | "system";
 
@@ -193,7 +194,7 @@ export const useTheme = () => {
 	const context = React.useContext(ThemeProviderContext);
 
 	if (context === undefined) {
-		throw new Error("useTheme must be used within a ThemeProvider");
+		throw new InvariantError("useTheme must be used within a ThemeProvider");
 	}
 
 	return context;

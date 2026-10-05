@@ -1,4 +1,5 @@
 import { count, eq } from "drizzle-orm";
+import { InvariantError } from "@/core/errors";
 import { getDb } from "@/db/setup";
 import type {
 	Client,
@@ -36,7 +37,7 @@ export async function getClients(params: PaginationRequest): Promise<ClientListR
 export async function createClient(data: ClientCreateInput): Promise<Client> {
 	const db = getDb();
 	const [client] = await db.insert(clients).values(data).returning();
-	if (!client) throw new Error("Failed to create client");
+	if (!client) throw new InvariantError("Insert with .returning() yielded no row");
 	return client;
 }
 

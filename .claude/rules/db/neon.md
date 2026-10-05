@@ -15,6 +15,7 @@ paths:
 // src/db/setup.ts
 import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
+import { InvariantError } from '@/core/errors'
 
 let db: ReturnType<typeof drizzle>
 
@@ -30,7 +31,7 @@ export function initDatabase(connection: {
 }
 
 export function getDb() {
-  if (!db) throw new Error('Database not initialized')
+  if (!db) throw new InvariantError('Database not initialized. Call initDatabase() first.')
   return db
 }
 ```

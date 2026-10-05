@@ -106,7 +106,7 @@ src/
 │   ├── theme/                 # Theme provider / toggle
 │   └── clients/               # Feature components
 ├── core/
-│   ├── errors.ts              # AppError, Result<T>, isUniqueViolation
+│   ├── errors.ts              # AppError, ApiError, InvariantError, Result<T>, isUniqueViolation
 │   ├── functions/             # TanStack server functions
 │   └── middleware/            # Server-function middleware
 ├── db/
@@ -443,7 +443,10 @@ export function isUniqueViolation(error: unknown): boolean { /* ... */ }
 ```
 
 - Use `AppError` for known, recoverable failures.
+- Use `InvariantError` for states that mean the code is wrong — it becomes a logged generic 500, and its message never reaches the client.
+- On the client, turn a failed response into an `ApiError` with `toApiError(res, fallback)`; it keeps the API's status, code and field.
 - Use `Result<T>` when a caller needs to branch on success/failure without throwing.
+- Never throw a bare `Error`: `src/error-classes.test.ts` fails the build on `throw new Error(` anywhere in `src/` outside tests.
 - Check `error.cause.code` (not `error.message`) when inspecting Drizzle errors — the raw Postgres code lives on `cause`. `isUniqueViolation()` is the idiomatic way to detect `23505` conflicts.
 - Unexpected errors propagate to the Hono global `onError` handler.
 

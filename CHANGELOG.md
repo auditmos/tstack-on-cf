@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/auditmos/tstack-on-cf/compare/v1.9.2...v1.9.3) (2026-10-05)
+
+
+### Bug Fixes
+
+* **errors:** throw named errors, and tell the form which field failed ([c01399f](https://github.com/auditmos/tstack-on-cf/commit/c01399f690b904f934b821d72d71b1ce27304dca))
+
 ## [1.9.2](https://github.com/auditmos/tstack-on-cf/compare/v1.9.1...v1.9.2) (2026-09-29)
 
 

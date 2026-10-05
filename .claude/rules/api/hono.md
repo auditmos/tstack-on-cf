@@ -7,32 +7,13 @@ paths:
 
 ## App Setup
 
-- Type bindings via `Hono<{ Bindings: Env }>`
+- Build every endpoint with `createHono(...middleware)` from `src/hono/factory.ts` — it types bindings as `Env`
+- Mount endpoints on `apiHono` in `src/hono/api.ts`; `src/server.ts` calls `apiHono.fetch`
 - Access env via `c.env`, not `process.env`
-- Export `app.fetch` for Workers
 
-```ts
-import { Hono } from 'hono'
-import type { Env } from './types'
+## Middleware
 
-const app = new Hono<{ Bindings: Env }>()
-
-export default {
-  fetch: app.fetch,
-}
-```
-
-## Middleware Chain
-
-Apply in order: requestId → errorHandler → cors → auth → rateLimiter → validator
-
-```ts
-app.use('*', requestId())
-app.use('*', errorHandler())
-app.use('*', cors())
-app.use('/api/*', authMiddleware())
-app.use('/api/*', rateLimiter())
-```
+Middleware passed to `createHono()` runs on `*` before the endpoint's handlers. That is the one place to attach auth: an endpoint is only as protected as the factory call that built it. The template ships no middleware — see the README's "Security posture" section before deploying.
 
 ## Route Structure
 
@@ -47,19 +28,19 @@ If `@hono/zod-validator` is not yet installed, use `safeParse` from `@/db/{domai
 ```ts
 // Best — zValidator (when available)
 import { zValidator } from '@hono/zod-validator'
-import { ClientCreateSchema, ClientIdParamSchema } from '@/db/client'
+import { ClientCreateRequestSchema, IdParamSchema } from '@/db/client'
 
 app.post('/clients',
-  zValidator('json', ClientCreateSchema),
+  zValidator('json', ClientCreateRequestSchema),
   async (c) => {
     const data = c.req.valid('json') // typed!
   }
 )
 
 // Acceptable — safeParse with named schema
-import { clientCreateSchema } from '@/db/client'
+import { ClientCreateRequestSchema } from '@/db/client'
 
-const result = clientCreateSchema.safeParse(await c.req.json())
+const result = ClientCreateRequestSchema.safeParse(await c.req.json())
 if (!result.success) return c.json({ error: 'Validation failed' }, 400)
 ```
 

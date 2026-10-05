@@ -10,21 +10,7 @@ paths:
 
 - ES module syntax with default export
 - Initialize resources (DB) in fetch handler
-- Route `/api/*` → Hono, rest → TanStack Start
-
-```ts
-// src/server.ts
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    initDatabase({ host: env.DATABASE_HOST, ... })
-    const url = new URL(request.url)
-    if (url.pathname.startsWith('/api')) {
-      return honoApp.fetch(request, env)
-    }
-    return tanstackHandler(request)
-  }
-}
-```
+- Route `/api/*` → Hono, rest → TanStack Start — `isApiRequest()` in `src/server.ts` decides, and matches `/api` and `/api/…` only (not `/apiary`)
 
 ## Env Bindings
 
@@ -36,21 +22,16 @@ export default {
 
 - Never hardcode secrets
 - Use `.dev.vars` for local dev (gitignored)
-- Use Cloudflare dashboard for remote secrets
+- Remote secrets are set per wrangler env — follow `docs/release-runbook.md`
 - Access same as env vars: `env.SECRET_NAME`
 
 ## Request Handling
 
 - Workers are stateless — no global mutable state
 - Use `waitUntil()` for async work after response
-- Respect CPU time limits (50ms free, 30s paid)
+- Respect CPU time limits (Free: 10 ms; Paid: 30 s default, up to 5 min via `limits.cpu_ms`)
 
 ```ts
 ctx.waitUntil(logAnalytics(request)) // non-blocking
 return response
 ```
-
-## Deployment
-
-- Deploy via `pnpm deploy`
-- Configure environments in `wrangler.jsonc`

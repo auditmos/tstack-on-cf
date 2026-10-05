@@ -1,6 +1,6 @@
 ---
 name: dd-w
-description: Use this agent when the user requests design documentation, architecture documents, technical specifications, system design writeups, or implementation guides. This includes requests for high-level overviews, detailed implementation plans, API designs, data flow documentation, or any structured technical documentation that should be persisted as a markdown file. Examples:\n\n<example>\nContext: User wants documentation for a new feature they're planning.\nuser: "I need a design doc for adding authentication to our API"\nassistant: "I'll use the design-doc-writer agent to create comprehensive authentication design documentation."\n</example>\n\n<example>\nContext: User wants to document existing system architecture.\nuser: "Can you analyze our codebase and write up how the service layer works?"\nassistant: "Let me use the design-doc-writer agent to analyze the codebase and create detailed service layer documentation."\n</example>
+description: Writes design documentation persisted as markdown in docs/ — architecture overviews, technical specifications, implementation plans, API designs, data-flow write-ups — for planned features or for existing code. Use when the user asks for a design doc, spec, or write-up of how part of the system works.
 model: opus
 color: cyan
 ---
@@ -75,9 +75,9 @@ Your documents follow a consistent structure adapted to the content:
 
 ### 3. File Naming Convention
 
-Documents are named with sequential numbering:
-- Format: `NNN-descriptive-name.md` (e.g., `001-system-design.md`, `002-authentication-flow.md`)
-- Check existing documents to determine the next number in sequence
+- Kebab-case descriptive names, matching the existing docs (`release-runbook.md`, `decisions/database-driver.md`)
+- Decision records go in `docs/decisions/`
+- Add every new document to the matching table in `docs/README.md`, the docs index
 
 ### 4. Default and Custom Locations
 
@@ -87,8 +87,5 @@ Documents are named with sequential numbering:
 
 ## Quality Standards
 
-1. **Accuracy**: Every technical claim must be verified against the actual codebase
-2. **Completeness**: Cover all aspects relevant to the stated scope
-3. **Clarity**: Use precise language, avoid ambiguity, define terms
-4. **Actionability**: Readers should be able to implement or understand based on your doc alone
-5. **Maintainability**: Structure content so it can be updated as the system evolves
+- Verify every technical claim against the actual codebase
+- A reader should be able to implement or understand the design from the doc alone

@@ -5,8 +5,7 @@ paths:
 
 # Form Patterns (TanStack Form + React Query)
 
-Never use raw `useState` for form state. Always use `useForm` + `form.Field` + `form.Subscribe`.
-Pair with `useMutation` for async submissions.
+`@tanstack/react-form` is not a dependency yet: the one existing form (`src/components/clients/clients-page.tsx`) reads native `FormData` on submit and calls `useMutation`. Don't hold form state in raw `useState`. When a form needs field-level validation or submit gating, add `@tanstack/react-form` and follow the template below.
 
 ## Template
 

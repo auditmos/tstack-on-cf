@@ -9,7 +9,7 @@ paths:
 
 - Use `pgTable()` with explicit column types
 - Define tables in `{domain}/table.ts`
-- Define relations in separate `drizzle/relations.ts`
+- No relations are defined yet. Export any you add from `src/db/schema.ts` (drizzle-kit's schema entry)
 - Never edit auto-generated files
 
 ```ts
@@ -34,7 +34,7 @@ export type NewUser = InferInsertModel<typeof users>
 ## Query Patterns
 
 - Use SQL-like API for complex queries with joins
-- Use relational API (`db.query.*`) for nested data
+- Relational API (`db.query.*`) for nested data needs the schema passed to `drizzle()` in `src/db/setup.ts`, which it is not yet — until then, use the SQL-like API
 - Always use `eq()`, `and()`, `or()` helpers
 - Drizzle outputs exactly 1 SQL query—leverage for serverless
 

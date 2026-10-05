@@ -25,9 +25,9 @@ paths:
 </div>
 ```
 
-## Theme Awareness (REQUIRED)
+## Theme Awareness
 
-Every UI element MUST use theme-aware CSS variable classes. Never use hardcoded colors.
+Use theme-aware CSS variable classes for every color: `.dark` redefines those variables, so hardcoded palette colors stay the same in both themes and break dark mode.
 
 - Text: `text-foreground`, `text-muted-foreground`, `text-primary`, `text-destructive`
 - Backgrounds: `bg-background`, `bg-muted`, `bg-card`, `bg-accent`

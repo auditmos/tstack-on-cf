@@ -9,16 +9,16 @@ paths:
 
 - Define schemas in `{domain}/schema.ts`
 - Derive types with `z.infer<typeof Schema>`
-- Use descriptive schema names ending in `Schema`
+- Name schemas in PascalCase ending in `Schema`, as `src/db/client/schema.ts` does (`ClientCreateRequestSchema`, `IdParamSchema`)
 
 ```ts
-export const userSchema = z.object({
+export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   name: z.string().min(1).max(100),
 })
 
-export type User = z.infer<typeof userSchema>
+export type User = z.infer<typeof UserSchema>
 ```
 
 ## Validation Patterns
@@ -27,7 +27,7 @@ export type User = z.infer<typeof userSchema>
 - Return structured results, don't throw
 
 ```ts
-const result = userSchema.safeParse(input)
+const result = UserSchema.safeParse(input)
 if (!result.success) {
   return { ok: false, errors: result.error.flatten() }
 }
@@ -42,8 +42,8 @@ return { ok: true, data: result.data }
 - Use `.partial()` for optional fields
 
 ```ts
-const createUserSchema = userSchema.omit({ id: true })
-const updateUserSchema = userSchema.partial().required({ id: true })
+const UserCreateRequestSchema = UserSchema.omit({ id: true })
+const UserUpdateRequestSchema = UserSchema.partial().required({ id: true })
 ```
 
 ## When Zod vs When Interface

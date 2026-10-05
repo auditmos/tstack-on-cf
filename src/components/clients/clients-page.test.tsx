@@ -70,6 +70,24 @@ describe("clients page form errors", () => {
 		expect(screen.getByLabelText("Name").getAttribute("aria-invalid")).toBeNull();
 	});
 
+	it("clears a failed save's error when the dialog is reopened", async () => {
+		stubApi(() =>
+			Response.json(
+				{ error: "Invalid email format", code: "VALIDATION", field: "email" },
+				{ status: 400 },
+			),
+		);
+		renderPage();
+		await submitNewClient();
+		expect(await screen.findByText("Invalid email format")).toBeTruthy();
+
+		fireEvent.click(screen.getByRole("button", { name: "Close" }));
+		fireEvent.click(await screen.findByRole("button", { name: /add client/i }));
+
+		expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBeNull();
+		expect(screen.queryByText("Invalid email format")).toBeNull();
+	});
+
 	it("shows an error with no field once, for the whole form", async () => {
 		stubApi(() => new Response("<html>502 Bad Gateway</html>", { status: 502 }));
 		renderPage();

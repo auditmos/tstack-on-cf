@@ -45,14 +45,13 @@ Services/handlers can return `Result<T>` — never throw `HTTPException`.
 `AppError` shape: `code`, `message`, `status`, optional `field`.
 Unexpected errors propagate to global `onError`.
 
-## Response Consistency
+## Error Responses
+
+Throw, and let `apiHono.onError` render `{ error, code, field? }`. Never put Zod's `error.message` in a response — it is a JSON dump of every issue. `parseRequest` and `parseJsonBody` (`src/hono/validation.ts`) throw a `VALIDATION` error with the first issue's message and field instead.
 
 ```ts
-// Success
-return c.json({ data: entity })
-return c.json({ data: entities, meta: { total, page } })
-
-// Error — throw, and let apiHono.onError render { error, code, field? }
 throw new AppError('Client not found', 'NOT_FOUND', 404)
-throw new AppError(parsed.error.message, 'VALIDATION', 400)
+const data = await parseJsonBody(ClientCreateRequestSchema, c.req)
 ```
+
+Success shapes are in `api/hono.md`.

@@ -11,7 +11,7 @@ import {
 	updateClient,
 } from "@/db/client";
 import { createHono } from "@/hono/factory";
-import { parseRequest } from "@/hono/validation";
+import { parseJsonBody, parseRequest } from "@/hono/validation";
 
 const clientsEndpoint = createHono();
 
@@ -30,14 +30,14 @@ clientsEndpoint.get("/:id", async (c) => {
 	if (!client) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}
-	return c.json(client);
+	return c.json({ data: client });
 });
 
 clientsEndpoint.post("/", async (c) => {
-	const data = parseRequest(ClientCreateRequestSchema, await c.req.json());
+	const data = await parseJsonBody(ClientCreateRequestSchema, c.req);
 	try {
 		const client = await createClient(data);
-		return c.json(client, 201);
+		return c.json({ data: client }, 201);
 	} catch (err) {
 		if (isUniqueViolation(err)) {
 			throw new AppError("Email already exists", "CONFLICT", 409, "email");
@@ -48,12 +48,12 @@ clientsEndpoint.post("/", async (c) => {
 
 clientsEndpoint.put("/:id", async (c) => {
 	const { id } = parseRequest(IdParamSchema, { id: c.req.param("id") });
-	const data = parseRequest(ClientUpdateRequestSchema, await c.req.json());
+	const data = await parseJsonBody(ClientUpdateRequestSchema, c.req);
 	const client = await updateClient(id, data);
 	if (!client) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}
-	return c.json(client);
+	return c.json({ data: client });
 });
 
 clientsEndpoint.delete("/:id", async (c) => {
@@ -62,7 +62,7 @@ clientsEndpoint.delete("/:id", async (c) => {
 	if (!deleted) {
 		throw new AppError("Client not found", "NOT_FOUND", 404);
 	}
-	return c.json({ success: true });
+	return c.body(null, 204);
 });
 
 export default clientsEndpoint;

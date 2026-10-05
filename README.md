@@ -118,6 +118,7 @@ src/
 │   └── health/                # Domain: health check query
 ├── hono/
 │   ├── factory.ts             # Typed Hono factory with CF Bindings
+│   ├── validation.ts          # parseRequest, parseJsonBody → VALIDATION AppError
 │   ├── api.ts                 # Router mounting /api/health, /api/clients
 │   └── api/
 │       ├── health.ts
@@ -326,11 +327,11 @@ Per-env configs (`drizzle-dev.config.ts`, `drizzle-staging.config.ts`, `drizzle-
 
 All `/api/*` routes are handled by Hono. Endpoints live in `src/hono/api/` and are mounted in `src/hono/api.ts`.
 
-### Example: `GET /api/clients`
+### Example: `/api/clients`
 
 ```ts
 // src/hono/api/clients.ts
-import { isUniqueViolation } from "@/core/errors";
+import { AppError, isUniqueViolation } from "@/core/errors";
 import {
   ClientCreateRequestSchema,
   createClient,
@@ -338,32 +339,45 @@ import {
   PaginationRequestSchema,
 } from "@/db/client";
 import { createHono } from "@/hono/factory";
+import { parseJsonBody, parseRequest } from "@/hono/validation";
 
 const clientsEndpoint = createHono();
 
 clientsEndpoint.get("/", async (c) => {
-  const parsed = PaginationRequestSchema.safeParse({
+  const pagination = parseRequest(PaginationRequestSchema, {
     limit: c.req.query("limit"),
     offset: c.req.query("offset"),
   });
-  if (!parsed.success) return c.json({ error: parsed.error.message }, 400);
-  return c.json(await getClients(parsed.data));
+  const result = await getClients(pagination);
+  return c.json(result); // { data, pagination }
 });
 
 clientsEndpoint.post("/", async (c) => {
-  const parsed = ClientCreateRequestSchema.safeParse(await c.req.json());
-  if (!parsed.success) return c.json({ error: parsed.error.message }, 400);
-
+  const data = await parseJsonBody(ClientCreateRequestSchema, c.req);
   try {
-    return c.json(await createClient(parsed.data), 201);
+    const client = await createClient(data);
+    return c.json({ data: client }, 201);
   } catch (err) {
-    if (isUniqueViolation(err)) return c.json({ error: "Email already exists" }, 409);
+    if (isUniqueViolation(err)) {
+      throw new AppError("Email already exists", "CONFLICT", 409, "email");
+    }
     throw err;
   }
 });
 
 export default clientsEndpoint;
 ```
+
+### Response contract
+
+| Outcome | Status | Body |
+|---------|--------|------|
+| One entity | 200, or 201 on create | `{ data }` |
+| A list | 200 | `{ data, pagination }` |
+| A delete | 204 | none |
+| A failure | the `AppError`'s status | `{ error, code, field? }` |
+
+Handlers throw `AppError` and `apiHono.onError` renders it. `parseRequest` and `parseJsonBody` (`src/hono/validation.ts`) throw a `VALIDATION` error carrying the first failing field's message and its name, which is what lets the form show it under that field. A body that is not JSON is a 400 as well — read bodies only through `parseJsonBody`, which `src/hono/request-bodies.test.ts` enforces. The health endpoints keep their own probe-oriented shapes.
 
 ### Mounting a New Endpoint
 
@@ -399,11 +413,12 @@ Every `/api/*` route answers any request that reaches the Worker — including `
 **Authentication attaches in `src/hono/factory.ts`.** `createHono()` applies every middleware it is handed to `*`, ahead of any handler the endpoint registers:
 
 ```ts
+import { AppError } from "@/core/errors";
 import { type ApiMiddleware, createHono } from "@/hono/factory";
 
 const requireApiKey: ApiMiddleware = async (c, next) => {
   if (c.req.header("authorization") !== `Bearer ${c.env.API_TOKEN}`) {
-    return c.json({ error: "Unauthorized" }, 401);
+    throw new AppError("Unauthorized", "UNAUTHORIZED", 401);
   }
   await next();
 };

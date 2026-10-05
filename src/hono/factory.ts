@@ -16,7 +16,7 @@ export type ApiMiddleware = MiddlewareHandler<{ Bindings: Env }>;
  * ```ts
  * const requireApiKey: ApiMiddleware = async (c, next) => {
  *   if (c.req.header("authorization") !== `Bearer ${c.env.API_TOKEN}`) {
- *     return c.json({ error: "Unauthorized" }, 401);
+ *     throw new AppError("Unauthorized", "UNAUTHORIZED", 401);
  *   }
  *   await next();
  * };

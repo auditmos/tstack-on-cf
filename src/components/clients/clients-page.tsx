@@ -39,7 +39,8 @@ async function apiCreateClient(data: ClientCreateInput) {
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw await toApiError(res, "Failed to create client");
-	return res.json() as Promise<Client>;
+	const body = (await res.json()) as { data: Client };
+	return body.data;
 }
 
 async function apiUpdateClient({ id, ...data }: { id: string } & Partial<ClientCreateInput>) {
@@ -49,7 +50,8 @@ async function apiUpdateClient({ id, ...data }: { id: string } & Partial<ClientC
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw await toApiError(res, "Failed to update client");
-	return res.json() as Promise<Client>;
+	const body = (await res.json()) as { data: Client };
+	return body.data;
 }
 
 async function apiDeleteClient(id: string) {
@@ -155,12 +157,10 @@ export function ClientsPage() {
 		}
 	}
 
-	function openCreate() {
-		setEditingClient(null);
-		setDialogOpen(true);
-	}
-
-	function openEdit(client: Client) {
+	// A mutation keeps its error until reset, so a reopened dialog would show the last failure.
+	function openDialog(client: Client | null) {
+		createMutation.reset();
+		updateMutation.reset();
 		setEditingClient(client);
 		setDialogOpen(true);
 	}
@@ -189,7 +189,7 @@ export function ClientsPage() {
 						<CardTitle>{data ? `${data.pagination.total} clients` : "Clients"}</CardTitle>
 						<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 							<DialogTrigger asChild>
-								<Button size="sm" onClick={openCreate}>
+								<Button size="sm" onClick={() => openDialog(null)}>
 									<Plus className="mr-2 h-4 w-4" />
 									Add Client
 								</Button>
@@ -262,7 +262,7 @@ export function ClientsPage() {
 											<TableCell>{client.email}</TableCell>
 											<TableCell className="text-right">
 												<div className="flex justify-end gap-1">
-													<Button variant="ghost" size="sm" onClick={() => openEdit(client)}>
+													<Button variant="ghost" size="sm" onClick={() => openDialog(client)}>
 														<Pencil className="h-4 w-4" />
 													</Button>
 													<Button

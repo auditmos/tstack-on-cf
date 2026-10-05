@@ -22,53 +22,31 @@ Middleware passed to `createHono()` runs on `*` before the endpoint's handlers. 
 
 ## Request Validation
 
-Preferred: use `zValidator` from `@hono/zod-validator` with named schemas from `@/db/{domain}`.
-If `@hono/zod-validator` is not yet installed, use `safeParse` from `@/db/{domain}` schemas — never inline `z.object()`.
+Validate with `parseRequest` and `parseJsonBody` from `src/hono/validation.ts`, against named schemas from `@/db/{domain}` — never inline `z.object()`. Both throw a `VALIDATION` `AppError` carrying the first failing issue's message and its field, so the client can show it under that field.
 
 ```ts
-// Best — zValidator (when available)
-import { zValidator } from '@hono/zod-validator'
 import { ClientCreateRequestSchema, IdParamSchema } from '@/db/client'
+import { parseJsonBody, parseRequest } from '@/hono/validation'
 
-app.post('/clients',
-  zValidator('json', ClientCreateRequestSchema),
-  async (c) => {
-    const data = c.req.valid('json') // typed!
-  }
-)
-
-// Acceptable — safeParse with named schema
-import { ClientCreateRequestSchema } from '@/db/client'
-
-const result = ClientCreateRequestSchema.safeParse(await c.req.json())
-if (!result.success) return c.json({ error: 'Validation failed' }, 400)
+const { id } = parseRequest(IdParamSchema, { id: c.req.param('id') })
+const data = await parseJsonBody(ClientCreateRequestSchema, c.req)
 ```
+
+Read a JSON body only through `parseJsonBody`: `c.req.json()` throws a bare `SyntaxError` on malformed input, which the global handler turns into a 500. `src/hono/request-bodies.test.ts` enforces this. Not `zValidator`: its default hook answers with its own error shape, not `{ error, code, field? }`.
 
 ## Error Handling
 
-- Use `AppError` from `@/core/errors` for known errors
+- Throw `AppError` from `@/core/errors` for known failures; which class when is in `error-handling.md`
 - Use `isUniqueViolation` for constraint conflicts
-- Centralize via error middleware
-- Return consistent error shapes
-
-```ts
-app.onError((err, c) => {
-  if (err instanceof AppError) {
-    return c.json({ error: err.message }, err.status)
-  }
-  console.error(err)
-  return c.json({ error: 'Internal error' }, 500)
-})
-```
+- `apiHono.onError` in `src/hono/api.ts` is the one renderer: an `AppError` becomes `{ error, code, field? }` with its status, and anything else is logged and becomes a generic 500. Throw from a handler rather than returning error JSON
 
 ## Response Patterns
 
 ```ts
-// Success
-return c.json({ data: entity })
-return c.json({ data: entities, meta: { total, page } })
-
-// Error
-return c.json({ error: 'Not found' }, 404)
-return c.json({ error: 'Validation failed', details: errors }, 400)
+return c.json({ data: client })              // one entity; add 201 on create
+return c.json({ data: rows, pagination })    // a list — pagination is { total, limit, offset, hasMore }
+return c.body(null, 204)                     // a delete
+throw new AppError('Client not found', 'NOT_FOUND', 404)
 ```
+
+The health endpoints are exempt: their bodies are shaped for probes.

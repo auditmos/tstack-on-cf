@@ -141,13 +141,13 @@ Path alias `@/*` resolves to `src/*`.
 | Runtime | Cloudflare Workers (`nodejs_compat`) |
 | Database | Neon Postgres + Drizzle ORM (`neon-http`) |
 | Validation | Zod 4 |
-| Forms | TanStack Form |
+| Forms | Native `FormData` + TanStack Query mutations; add TanStack Form when a form needs field-level validation (`.claude/rules/frontend/form-patterns.md`) |
 | Language | TypeScript (strict) |
 | Linter | Biome 2 |
 | Testing | Vitest + Testing Library + jsdom |
 | Dead-code detection | knip |
 | Release | semantic-release |
-| Package manager | pnpm 10 |
+| Package manager | pnpm 12 |
 
 ## Cloudflare Integration
 

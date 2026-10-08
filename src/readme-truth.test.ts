@@ -63,6 +63,32 @@ describe("compat-date bot keeps the README snippet in step", () => {
 	});
 });
 
+/** The Technology cell of a row in the README's stack table. */
+function stackRow(layer: string): string {
+	const row = readme.split("\n").find((line) => line.startsWith(`| ${layer} |`));
+	if (!row) throw new Error(`no stack table row: ${layer}`);
+	return row.split("|")[2]?.trim() ?? "";
+}
+
+describe("README stack table", () => {
+	const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8")) as {
+		packageManager: string;
+		dependencies?: Record<string, string>;
+		devDependencies?: Record<string, string>;
+	};
+
+	it("names the pnpm major that packageManager pins", () => {
+		const major = pkg.packageManager.match(/^pnpm@(\d+)\./)?.[1];
+		expect(stackRow("Package manager")).toBe(`pnpm ${major}`);
+	});
+
+	// Naming a library in the stack reads as "this ships"; it has to be installed.
+	it("lists TanStack Form as the forms layer only when it is a dependency", () => {
+		const installed = "@tanstack/react-form" in { ...pkg.dependencies, ...pkg.devDependencies };
+		expect(stackRow("Forms").startsWith("TanStack Form")).toBe(installed);
+	});
+});
+
 /** Environments that have a drizzle config, and where each writes migrations. */
 function configuredEnvironments(): { env: string; out: string }[] {
 	return readdirSync(ROOT)

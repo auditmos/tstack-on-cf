@@ -36,11 +36,18 @@ jobs:
           node-version: lts/*
           cache: pnpm
 
+      # Before the check, on every run: the check reads the installed workerd
+      # to learn the newest date the local runtime accepts.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
       - name: Inspect & bump compatibility_date
         id: check
         run: |
           node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+          import { readFileSync, writeFileSync, appendFileSync, existsSync, readdirSync } from "node:fs";
+          import { createRequire } from "node:module";
+          import { resolve } from "node:path";
 
           const path = "wrangler.jsonc";
           const raw = readFileSync(path, "utf8");
@@ -67,9 +74,34 @@ jobs:
             process.exit(0);
           }
 
+          // Today can be past what the installed runtime accepts, and workerd
+          // refuses to start on a date newer than its own: wrangler dev, vite
+          // dev and the workers test pool would all fail. Every installed copy
+          // counts, because each tool launches the one its miniflare depends on.
+          const store = "node_modules/.pnpm";
+          const require = createRequire(resolve("package.json"));
+          const declared = (existsSync(store) ? readdirSync(store) : [])
+            .filter((dir) => dir.startsWith("workerd@"))
+            .map((dir) => require(resolve(store, dir, "node_modules", "workerd")).compatibilityDate);
+          if (declared.length === 0 || !declared.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))) {
+            console.error(`No installed workerd declares a compatibility date under ${store} — is pnpm install missing?`);
+            process.exit(1);
+          }
+          const supported = declared.sort()[0];
+          const target = today < supported ? today : supported;
+          console.log(`Installed workerd supports up to: ${supported}`);
+
+          if (target <= current) {
+            console.error(
+              `compatibility_date ${current} is ${ageDays.toFixed(0)} days old, but the installed workerd ` +
+                `supports up to ${supported}. Update wrangler and the Cloudflare plugins to raise it.`,
+            );
+            process.exit(1);
+          }
+
           const updated = raw.replace(
             /("compatibility_date"\s*:\s*)"[^"]+"/,
-            `$1"${today}"`,
+            `$1"${target}"`,
           );
           if (updated === raw) {
             console.error("Failed to rewrite compatibility_date — regex did not match");
@@ -84,7 +116,7 @@ jobs:
           const readme = readFileSync(readmePath, "utf8");
           const readmeUpdated = readme.replace(
             /("compatibility_date"\s*:\s*)"[^"]+"/,
-            `$1"${today}"`,
+            `$1"${target}"`,
           );
           if (readmeUpdated === readme) {
             console.error("Failed to rewrite compatibility_date in README.md — regex did not match");
@@ -94,14 +126,11 @@ jobs:
 
           appendFileSync(out, "bump=true\n");
           appendFileSync(out, `from=${current}\n`);
-          appendFileSync(out, `to=${today}\n`);
+          appendFileSync(out, `to=${target}\n`);
+          appendFileSync(out, `supported=${supported}\n`);
           appendFileSync(out, `age_days=${ageDays.toFixed(0)}\n`);
-          console.log(`Bumped ${current} → ${today}`);
+          console.log(`Bumped ${current} → ${target}`);
           NODE
-
-      - name: Install (only if bumping)
-        if: steps.check.outputs.bump == 'true'
-        run: pnpm install --frozen-lockfile
 
       # Secret names are declared in wrangler.jsonc, so typegen no longer reads
       # .dev.vars and runs identically here and on a developer's machine.
@@ -141,6 +170,7 @@ jobs:
             - **From:** `${{ steps.check.outputs.from }}`
             - **To:** `${{ steps.check.outputs.to }}`
             - **Age at trigger:** ${{ steps.check.outputs.age_days }} days (threshold: 90)
+            - **Installed workerd supports up to:** `${{ steps.check.outputs.supported }}` (the bump never goes past it)
 
             `worker-configuration.d.ts` is regenerated in this job — secret
             names are declared in `wrangler.jsonc`, so `wrangler types` no

@@ -157,7 +157,7 @@ Path alias `@/*` resolves to `src/*`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tanstack-start-app",
-  "compatibility_date": "2026-09-26",
+  "compatibility_date": "2026-11-17",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./src/server.ts",
   "vars": {

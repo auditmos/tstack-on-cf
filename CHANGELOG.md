@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/auditmos/tstack-on-cf/compare/v2.0.0...v2.0.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **ci:** cap the compat-date bump at what the installed workerd supports ([81e893c](https://github.com/auditmos/tstack-on-cf/commit/81e893c3725291217035669a8f2295b742ca1305))
+
 # [2.0.0](https://github.com/auditmos/tstack-on-cf/compare/v1.9.3...v2.0.0) (2026-10-05)
 
 

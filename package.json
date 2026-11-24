@@ -75,7 +75,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
-		"@cloudflare/vite-plugin": "^1.61.0",
+		"@cloudflare/vite-plugin": "^1.70.1",
 		"@cloudflare/vitest-plugin": "^1.9.0",
 		"@dotenvx/dotenvx": "^2.31.1",
 		"@semantic-release/changelog": "^7.0.0",
@@ -97,7 +97,7 @@
 		"typescript": "^5.9.3",
 		"vite": "7.1.2",
 		"vitest": "^5.1.1",
-		"wrangler": "^4.142.0"
+		"wrangler": "^4.166.0"
 	},
 	"simple-git-hooks": {
 		"pre-commit": "pnpm run lint:ci",

@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/auditmos/tstack-on-cf/compare/v2.0.1...v2.0.2) (2026-11-24)
+
+
+### Performance Improvements
+
+* preload client data and enforce bundle budgets ([860f6e3](https://github.com/auditmos/tstack-on-cf/commit/860f6e388d6fb54971cafc9b597fa246c7ddb02a))
+
 ## [2.0.1](https://github.com/auditmos/tstack-on-cf/compare/v2.0.0...v2.0.1) (2026-11-24)
 
 

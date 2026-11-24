@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Github } from "@/components/icons/github";
 import { Badge } from "@/components/ui/badge";
@@ -25,9 +26,14 @@ export function HeroSection() {
 				</p>
 
 				<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-					<Button size="lg" className="group">
-						Get Started
-						<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+					<Button size="lg" className="group" asChild>
+						<Link to="/clients">
+							View clients
+							<ArrowRight
+								aria-hidden="true"
+								className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+							/>
+						</Link>
 					</Button>
 
 					<Button variant="outline" size="lg" asChild>

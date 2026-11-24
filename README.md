@@ -67,6 +67,7 @@ The app runs on http://localhost:3000. API endpoints are served under `/api/*`.
 |--------|---------|
 | `pnpm dev` | Dev server on port 3000 (Vite + Cloudflare plugin) |
 | `pnpm build` | Production build |
+| `pnpm budget` | Check per-route Brotli limits after the production build |
 | `pnpm serve` | Preview the production build locally |
 | `pnpm build:{staging,production}` | Build for a specific env (bakes env config via `CLOUDFLARE_ENV=<env>`) |
 | `pnpm run deploy` | Build and deploy to the default (`dev`) Cloudflare Workers config — needs `pnpm run`, as bare `deploy` is pnpm's own workspace command |

@@ -24,7 +24,7 @@ env:
 
 jobs:
   verify:
-    name: Lint, types, tests, knip, build
+    name: Lint, types, tests, knip, build, bundle budget
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -71,4 +71,7 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+      - name: Check bundle budget
+        run: pnpm run budget
 

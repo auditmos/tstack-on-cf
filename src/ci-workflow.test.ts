@@ -43,6 +43,11 @@ describe("CI workflow", () => {
 		expect(readFileSync(CI_WORKFLOW, "utf8")).toMatch(/^\s*workflow_dispatch:/m);
 	});
 
+	it("checks the bundle budget after building", () => {
+		const commands = runCommands(CI_WORKFLOW);
+		expect(commands.indexOf("pnpm run budget")).toBeGreaterThan(commands.indexOf("pnpm run build"));
+	});
+
 	// pnpm only warns about an unmet peer, and it skips the peer check entirely
 	// when it installs from an existing lockfile, so #40 installed cleanly and
 	// only broke at build. Checking right after install names the peer instead.

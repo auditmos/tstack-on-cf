@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
+import { listClients } from "@/core/functions/client-functions";
 import { ClientsPage } from "./clients-page";
+import { clientsQueryOptions } from "./clients-query";
 
 // The page's back link is the only thing it needs from the router, and no route
 // is under test here.
@@ -9,23 +11,16 @@ vi.mock("@tanstack/react-router", () => ({
 	Link: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-/** What the API answers to the create request; the list is always empty. */
+vi.mock("@/core/functions/client-functions", () => ({ listClients: vi.fn() }));
+
+/** What the REST API answers to the create request. */
 function stubApi(answerCreate: () => Response) {
-	vi.stubGlobal(
-		"fetch",
-		vi.fn(async (_url: string, init?: RequestInit) =>
-			init?.method === "POST"
-				? answerCreate()
-				: Response.json({
-						data: [],
-						pagination: { total: 0, limit: 10, offset: 0, hasMore: false },
-					}),
-		),
-	);
+	vi.stubGlobal("fetch", vi.fn(answerCreate));
 }
 
-function renderPage() {
-	const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function renderPage(
+	queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
 	return render(
 		<QueryClientProvider client={queryClient}>
 			<ClientsPage />
@@ -47,6 +42,25 @@ function descriptionOf(input: HTMLElement): string | null {
 	const id = input.getAttribute("aria-describedby");
 	return id ? (document.getElementById(id)?.textContent ?? null) : null;
 }
+
+beforeEach(() => {
+	vi.mocked(listClients)
+		.mockReset()
+		.mockResolvedValue({
+			data: [],
+			pagination: { total: 0, limit: 10, offset: 0, hasMore: false },
+		});
+});
+
+it("reads the prefetched client list without fetching it again", async () => {
+	const queryClient = new QueryClient();
+	await queryClient.query(clientsQueryOptions);
+
+	renderPage(queryClient);
+
+	expect(screen.getByText("0 clients")).toBeTruthy();
+	expect(listClients).toHaveBeenCalledTimes(1);
+});
 
 describe("clients page form errors", () => {
 	afterEach(() => {

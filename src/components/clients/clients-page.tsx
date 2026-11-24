@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useState } from "react";
@@ -23,14 +23,9 @@ import {
 } from "@/components/ui/table";
 import { ApiError, toApiError } from "@/core/errors";
 import type { Client, ClientCreateInput } from "@/db/client";
+import { clientsQueryOptions } from "./clients-query";
 
 const API_BASE = "/api/clients";
-
-async function fetchClients() {
-	const res = await fetch(API_BASE);
-	if (!res.ok) throw await toApiError(res, "Failed to fetch clients");
-	return res.json() as Promise<{ data: Client[]; pagination: { total: number } }>;
-}
 
 async function apiCreateClient(data: ClientCreateInput) {
 	const res = await fetch(API_BASE, {
@@ -112,15 +107,12 @@ export function ClientsPage() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-	const { data, isLoading, error } = useQuery({
-		queryKey: ["clients"],
-		queryFn: fetchClients,
-	});
+	const { data, error } = useSuspenseQuery(clientsQueryOptions);
 
 	const createMutation = useMutation({
 		mutationFn: apiCreateClient,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["clients"] });
+			queryClient.invalidateQueries({ queryKey: clientsQueryOptions.queryKey });
 			setDialogOpen(false);
 		},
 	});
@@ -128,7 +120,7 @@ export function ClientsPage() {
 	const updateMutation = useMutation({
 		mutationFn: apiUpdateClient,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["clients"] });
+			queryClient.invalidateQueries({ queryKey: clientsQueryOptions.queryKey });
 			setEditingClient(null);
 			setDialogOpen(false);
 		},
@@ -137,7 +129,7 @@ export function ClientsPage() {
 	const deleteMutation = useMutation({
 		mutationFn: apiDeleteClient,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["clients"] });
+			queryClient.invalidateQueries({ queryKey: clientsQueryOptions.queryKey });
 		},
 	});
 
@@ -172,12 +164,12 @@ export function ClientsPage() {
 		<div className="min-h-screen bg-background">
 			<div className="mx-auto max-w-4xl p-6">
 				<div className="mb-6 flex items-center gap-4">
-					<Link to="/">
-						<Button variant="ghost" size="sm">
-							<ArrowLeft className="mr-2 h-4 w-4" />
+					<Button variant="ghost" size="sm" asChild>
+						<Link to="/">
+							<ArrowLeft aria-hidden="true" className="mr-2 h-4 w-4" />
 							Back
-						</Button>
-					</Link>
+						</Link>
+					</Button>
 					<div className="flex items-center gap-2">
 						<Users className="h-6 w-6" />
 						<h1 className="text-2xl font-bold">Clients</h1>
@@ -186,7 +178,7 @@ export function ClientsPage() {
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between">
-						<CardTitle>{data ? `${data.pagination.total} clients` : "Clients"}</CardTitle>
+						<CardTitle>{data.pagination.total} clients</CardTitle>
 						<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 							<DialogTrigger asChild>
 								<Button size="sm" onClick={() => openDialog(null)}>
@@ -233,18 +225,16 @@ export function ClientsPage() {
 						</Dialog>
 					</CardHeader>
 					<CardContent>
-						{isLoading && (
-							<div className="flex justify-center py-8">
-								<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-							</div>
+						{error && (
+							<p role="alert" className="py-4 text-center text-sm text-destructive">
+								{error.message}
+							</p>
 						)}
-						{error && <p className="py-4 text-center text-sm text-destructive">{error.message}</p>}
-						{data && data.data.length === 0 && (
+						{data.data.length === 0 ? (
 							<p className="py-8 text-center text-sm text-muted-foreground">
 								No clients yet. Add one to get started.
 							</p>
-						)}
-						{data && data.data.length > 0 && (
+						) : (
 							<Table>
 								<TableHeader>
 									<TableRow>

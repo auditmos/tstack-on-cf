@@ -6,14 +6,8 @@ import { exampleMiddlewareWithContext } from "@/core/middleware/example-middlewa
 
 const baseFunction = createServerFn().middleware([exampleMiddlewareWithContext]);
 
-const ExampleInputSchema = z.object({
-	exampleKey: z.string().min(1),
-});
-
-type ExampleInput = z.infer<typeof ExampleInputSchema>;
-
 export const examplefunction = baseFunction
-	.inputValidator((data: ExampleInput) => ExampleInputSchema.parse(data))
+	.validator(z.object({ exampleKey: z.string().min(1) }))
 	.handler(async (ctx) => {
 		// biome-ignore lint/suspicious/noConsole: structured demo log surfaces in Workers tail
 		console.log(JSON.stringify({ message: "example-fn: executing" }));

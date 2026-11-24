@@ -538,7 +538,7 @@ The suite is split across Vitest projects, all driven by that one `pnpm test`:
 | Project | Runs | Files |
 |---------|------|-------|
 | `node` | Node | `src/**/*.test.ts`, `scripts/**/*.test.ts` |
-| `workers` | `workerd`, via `@cloudflare/vitest-pool-workers` | `src/**/*.worker.test.ts` |
+| `workers` | `workerd`, via `@cloudflare/vitest-plugin` | `src/**/*.worker.test.ts` |
 | `components` | jsdom | `src/**/*.test.tsx` |
 
 The suffix picks the project, so there is nothing to configure per file: name a
